@@ -1,0 +1,9 @@
+# Cache Files
+.pytest_cache
+.mypy_cache
+
+# IDE Files
+.idea
+
+# Test DB
+*.sqlite3

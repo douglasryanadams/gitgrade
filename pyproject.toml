@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "gitgrade"
+version = "0.1.0"
+description = "Evaluates quality of git repos and provides a grade"
+authors = ["Douglas Adams <douglasryanadams@gmail.com>"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Django = "^4.0.1"
+pytest = "^6.2.5"
+
+[tool.poetry.dev-dependencies]
+pytest = "^6.2.5"
+pylint = "^2.12.2"
+mypy = "^0.931"
+black = "^21.12b0"
+django-stubs = "^1.9.0"
+safety = "^1.10.3"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
