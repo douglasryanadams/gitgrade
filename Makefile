@@ -8,19 +8,19 @@ test:
 
 
 lint:
-	poetry run black
-	poetry run mypy --strict .
+	poetry run black ./gitgrade ./repo
+	poetry run mypy --strict ./
 	poetry run pylint ./gitgrade ./repo
 
 security:
 	poetry export --without-hashes -f requirements.txt | poetry run safety check --full-report --stdin
 
 run:
-	poetry run django runserver
+	DJANGO_SETTINGS_MODULE=gitgrade.settings poetry run python -m django runserver
 
 migrate:
-	poetry run makemigrations
-	poetry run migrate
+	poetry run python -m django makemigrations
+	poetry run python -m django migrate
 
 check: lint test security
 
