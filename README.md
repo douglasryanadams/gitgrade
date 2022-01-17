@@ -4,3 +4,13 @@ Work in progress.
 
 See Makefile for valid make commands to run various aspects
 
+----
+
+Notes
+
+- Github API Rate Limit:
+  - Unauthenticated: 1 / Minute / IP
+  - OAuth: 5000 / Hour (~1/second)
+- Bitbucket API Rate Limit:
+  - Unauthenticated: 1 / Minute
+  - Auth: 1000 / Hour ( ~ 1 / 5 seconds )

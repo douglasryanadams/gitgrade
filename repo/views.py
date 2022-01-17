@@ -1,11 +1,12 @@
 import logging
+from dataclasses import asdict
 from typing import Final
 from django.shortcuts import render
 from django.http import HttpResponse, HttpRequest
 
 from .forms import RepoForm
 
-from .services import identify_source
+from .services import identify_source, fetch_api_based_data
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +29,14 @@ def repo_input(request: HttpRequest) -> HttpResponse:
             repo_url = form.cleaned_data["repo_url"]
             source = identify_source(repo_url)
 
+            api_data = fetch_api_based_data(source)
+
             final_grade: Final = "Placeholder"
-            response_json = {"source": source, "final_grade": final_grade}
+            response_json = {
+                "source": source,
+                "api_data": asdict(api_data),
+                "final_grade": final_grade,
+            }
             return HttpResponse(f"{response_json}")
     else:
         form = RepoForm()
