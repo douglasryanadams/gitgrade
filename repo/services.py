@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 
 import requests
 from django.core.validators import URLValidator
+from github import Github
 
 from gitgrade import Constants
 
@@ -68,16 +69,6 @@ def identify_source(repo_url: str) -> SourceMetadata:
 # Getting API Based Metadata
 ###
 
-
-@dataclass
-class GithubData:
-    issues_opened: int
-    issues_closed: int
-    stars: int
-    size: int
-    contributor_count: int
-
-
 @dataclass
 class ApiBasedData:
     days_since_update: int
@@ -87,7 +78,50 @@ class ApiBasedData:
     pull_requests_total: int
     has_issues: bool
     open_issues: int
-    github_data: Optional[GithubData]
+
+
+def _calculate_date_deltas(repo_json):
+    today = datetime.datetime.today()
+    updated_on = repo_json.get("updated_on")
+    created_on = repo_json.get("created_on")
+    if updated_on:
+        last_update = datetime.datetime.strptime(
+            updated_on, Constants.BITBUCKET_DATETIME_FORMAT
+        )
+        update_delta = today.date() - last_update.date()
+        days_since_update = update_delta.days
+    else:
+        days_since_update = -1
+    if created_on:
+        first_update = datetime.datetime.strptime(
+            created_on, Constants.BITBUCKET_DATETIME_FORMAT
+        )
+        create_delta = today.date() - first_update.date()
+        days_since_create = create_delta.days
+    else:
+        days_since_create = -1
+    return days_since_create, days_since_update
+
+
+def get_pull_request_counts(repo_url):
+    pulls_url = f"{repo_url}/pullrequests"
+
+    params_open_only = [("state", "OPEN")]
+    pulls_open = requests.get(pulls_url, params=params_open_only)
+    pulls_open_json = pulls_open.json()
+
+    params_all = [("state", "OPEN"), ("state", "MERGED"), ("state", "SUPERSEDED")]
+    pulls_all = requests.get(pulls_url, params=params_all)
+    pulls_all_json = pulls_all.json()
+
+    return pulls_all_json.get('size', -1), pulls_open_json.get('size', -1)
+
+
+def _get_watcher_count(repo_url):
+    watchers_url = f"{repo_url}/watchers"
+    watchers = requests.get(watchers_url)
+    watchers_json = watchers.json()
+    return watchers_json.get('size', -1)
 
 
 def _fetch_bitbucket(source: SourceMetadata) -> ApiBasedData:
@@ -102,50 +136,20 @@ def _fetch_bitbucket(source: SourceMetadata) -> ApiBasedData:
     repo = requests.get(repo_url)
     repo_json = repo.json()
 
-    today = datetime.datetime.today()
-    updated_on = repo_json.get("updated_on")
-    created_on = repo_json.get("created_on")
+    days_since_create, days_since_update = _calculate_date_deltas(repo_json)
 
-    if updated_on:
-        last_update = datetime.datetime.strptime(
-            updated_on, Constants.BITBUCKET_DATETIME_FORMAT
-        )
-        update_delta = today.date() - last_update.date()
-        days_since_update = update_delta.days
-    else:
-        days_since_update = -1
+    watchers_count = _get_watcher_count(repo_url)
 
-    if created_on:
-        first_update = datetime.datetime.strptime(
-            created_on, Constants.BITBUCKET_DATETIME_FORMAT
-        )
-        create_delta = today.date() - first_update.date()
-        days_since_create = create_delta.days
-    else:
-        days_since_create = -1
-
-    watchers_url = f"{repo_url}/watchers"
-    watchers = requests.get(watchers_url)
-    watchers_json = watchers.json()
-
-    pulls_url = f"{repo_url}/pullrequests"
-    params_open_only = [("state", "OPEN")]
-    pulls_open = requests.get(pulls_url, params=params_open_only)
-    pulls_open_json = pulls_open.json()
-
-    params_all = [("state", "OPEN"), ("state", "MERGED"), ("state", "SUPERSEDED")]
-    pulls_all = requests.get(pulls_url, params=params_all)
-    pulls_all_json = pulls_all.json()
+    pulls_all_count, pulls_open_count = get_pull_request_counts(repo_url)
 
     return ApiBasedData(
         days_since_update=days_since_update,
         days_since_create=days_since_create,
-        watchers=watchers_json.get("size", -1),
-        pull_requests_open=pulls_open_json.get("size", -1),
-        pull_requests_total=pulls_all_json.get("size", -1),
+        watchers=watchers_count,
+        pull_requests_open=pulls_open_count,
+        pull_requests_total=pulls_all_count,
         has_issues=repo_json.get("has_issues", False),
         open_issues=-1,
-        github_data=None,
     )
 
 
@@ -153,7 +157,31 @@ def _fetch_github(source: SourceMetadata) -> ApiBasedData:
     # Calls:
     # Repo itself - 1
     # Pull Requests (open and total) - 2
-    ...
+
+    github_client = Github()
+    repo = github_client.get_repo(f'{source.owner}/{source.repo}')
+    logger.debug(repo)
+
+    today = datetime.datetime.today()
+
+    updated_delta = today.date() - repo.updated_at.date()
+    days_since_update = updated_delta.days
+
+    created_delta = today.date() - repo.created_at.date()
+    days_since_create = created_delta.days
+
+    open_pulls = repo.get_pulls(state='open')
+    all_pulls = repo.get_pulls(state='all')
+
+    return ApiBasedData(
+        days_since_update=days_since_update,
+        days_since_create=days_since_create,
+        watchers=repo.watchers_count,
+        pull_requests_open=open_pulls.totalCount,
+        pull_requests_total=all_pulls.totalCount,
+        has_issues=repo.has_issues,
+        open_issues=repo.open_issues_count,
+    )
 
 
 fetch_source_map = {"bitbucket": _fetch_bitbucket, "github": _fetch_github}
@@ -177,7 +205,6 @@ def _extract_page_count(link_header_value: str) -> int:
         return int(page_count_str)
 
     return 0
-
 
 ###
 # Getting Git Repo Based Metadata

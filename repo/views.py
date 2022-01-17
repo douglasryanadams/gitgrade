@@ -2,7 +2,7 @@ import logging
 from dataclasses import asdict
 from typing import Final
 from django.shortcuts import render
-from django.http import HttpResponse, HttpRequest
+from django.http import HttpResponse, HttpRequest, JsonResponse
 
 from .forms import RepoForm
 
@@ -33,11 +33,11 @@ def repo_input(request: HttpRequest) -> HttpResponse:
 
             final_grade: Final = "Placeholder"
             response_json = {
-                "source": source,
-                "api_data": asdict(api_data),
-                "final_grade": final_grade,
+                'source': asdict(source),
+                'api_data': asdict(api_data),
+                'final_grade': final_grade,
             }
-            return HttpResponse(f"{response_json}")
+            return JsonResponse(response_json)
     else:
         form = RepoForm()
 

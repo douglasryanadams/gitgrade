@@ -14,3 +14,12 @@ Notes
 - Bitbucket API Rate Limit:
   - Unauthenticated: 1 / Minute
   - Auth: 1000 / Hour ( ~ 1 / 5 seconds )
+
+----
+
+TODO
+
+- [ ] Cache Data in DB
+- [ ] Make UI Pretty
+- [ ] Support for Accounts + Oauth Login to reduce rate limiting
+- [ ] Host it somewhere

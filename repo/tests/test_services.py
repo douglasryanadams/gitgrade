@@ -1,4 +1,5 @@
 import copy
+import datetime
 from typing import Union, Generator
 from unittest.mock import patch, Mock
 
@@ -13,7 +14,7 @@ from repo.services import (
     UnsupportedURL,
     _extract_page_count,
     _fetch_bitbucket,
-    ApiBasedData,
+    ApiBasedData, _fetch_github,
 )
 from repo.tests import bitbucket_objects
 
@@ -138,6 +139,52 @@ def test_fetch_bitbucket(bitbucket_requests_client: Mock) -> None:  # pylint: di
         pull_requests_total=1,
         has_issues=False,
         open_issues=-1,
-        github_data=None,
+    )
+    assert actual == expected
+
+
+@pytest.fixture
+def github_client() -> Generator[Mock, None, None]:
+    with patch('repo.services.Github') as mock_constructor:
+        mock_client = Mock()
+        mock_constructor.return_value = mock_client
+
+        mock_repo = Mock()
+        mock_repo.updated_at = datetime.datetime(2022, 1, 16, 22, 28, 41)
+        mock_repo.created_at = datetime.datetime(2008, 7, 23, 14, 21, 26)
+        mock_repo.watchers_count = 40736
+        mock_repo.has_issues = False
+        mock_repo.open_issues_count = 93
+
+        mock_open_pulls = Mock()
+        mock_open_pulls.totalCount = 86
+
+        mock_all_pulls = Mock()
+        mock_all_pulls.totalCount = 1016
+
+        mock_repo.get_pulls.side_effect = [
+            mock_open_pulls,
+            mock_all_pulls
+        ]
+
+        mock_client.get_repo.return_value = mock_repo
+
+        yield mock_constructor
+
+
+@freeze_time("2022-01-30")
+def test_fetch_github(github_client: Mock) -> None:
+    source = SourceMetadata(
+        source='github', owner='git', repo='git'
+    )
+    actual = _fetch_github(source)
+    expected = ApiBasedData(
+        days_since_create=4939,
+        days_since_update=14,
+        watchers=40736,
+        pull_requests_open=86,
+        pull_requests_total=1016,
+        has_issues=False,
+        open_issues=93,
     )
     assert actual == expected
