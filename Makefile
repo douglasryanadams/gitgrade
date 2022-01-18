@@ -13,7 +13,10 @@ lint:
 	poetry run pylint ./gitgrade ./repo
 
 security:
-	poetry export --without-hashes -f requirements.txt | poetry run safety check --full-report --stdin
+	poetry export --without-hashes -f requirements.txt > tmp_requirements.txt
+	poetry run liccheck -r tmp_requirements.txt
+	poetry run safety check --full-report -r tmp_requirements.txt
+	rm tmp_requirements.txt
 
 run:
 	DJANGO_SETTINGS_MODULE=gitgrade.settings poetry run python -m django runserver

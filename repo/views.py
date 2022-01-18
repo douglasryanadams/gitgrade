@@ -6,7 +6,7 @@ from django.http import HttpResponse, HttpRequest, JsonResponse
 
 from .forms import RepoForm
 
-from .services import identify_source, fetch_api_based_data
+from .services import identify_source, fetch_api_data, fetch_local_data
 
 logger = logging.getLogger(__name__)
 
@@ -29,13 +29,15 @@ def repo_input(request: HttpRequest) -> HttpResponse:
             repo_url = form.cleaned_data["repo_url"]
             source = identify_source(repo_url)
 
-            api_data = fetch_api_based_data(source)
+            api_data = fetch_api_data(source)
 
+            local_data = fetch_local_data(source)
             final_grade: Final = "Placeholder"
             response_json = {
-                'source': asdict(source),
-                'api_data': asdict(api_data),
-                'final_grade': final_grade,
+                "source": asdict(source),
+                "api_data": asdict(api_data),
+                "local_data": asdict(local_data),
+                "final_grade": final_grade,
             }
             return JsonResponse(response_json)
     else:
