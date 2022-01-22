@@ -5,8 +5,9 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpRequest, JsonResponse
 
 from .forms import RepoForm
-
-from .services import identify_source, fetch_api_data, fetch_local_data
+from .services.rest_api_service import fetch_api_data
+from .services.local_git_service import fetch_local_data
+from .services.url_service import identify_source
 
 logger = logging.getLogger(__name__)
 
