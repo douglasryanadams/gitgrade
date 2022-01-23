@@ -1,11 +1,12 @@
 import logging
 from dataclasses import asdict
 from typing import Final
+
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from django.http import HttpResponse, HttpRequest
 
 from .forms import RepoForm
-from .models import GitRepoData
 from .services.db_cache_service import check_cache, patch_cache
 from .services.rest_api_service import fetch_api_data
 from .services.local_git_service import fetch_local_data
@@ -34,7 +35,7 @@ def repo_input(request: HttpRequest) -> HttpResponse:
 
             try:
                 api_data, local_data = check_cache(url_metadata)
-            except GitRepoData.DoesNotExist:
+            except ObjectDoesNotExist:
                 api_data = fetch_api_data(url_metadata)
                 local_data = fetch_local_data(url_metadata)
                 patch_cache(url_metadata, api_data, local_data)

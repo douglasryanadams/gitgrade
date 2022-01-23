@@ -9,6 +9,7 @@ from typing import Tuple, Optional
 from git import Repo  # type: ignore
 
 from repo.services.data import UrlMetadata, LocalData
+from repo.services.errors import ClocMissingError
 
 logger = logging.getLogger(__name__)
 
@@ -27,11 +28,16 @@ def _setup_repo(directory_path: str, url_data: UrlMetadata) -> Repo:
     """
 
     if os.path.exists(directory_path):
+        logger.debug("  repo already exists, pulling: %s", directory_path)
         repo = Repo(directory_path)
         repo.remotes["origin"].pull()
     else:
+        repo_url = f"{source_to_base_url[url_data.source]}/{url_data.owner}/{url_data.repo}.git"
+        logger.debug("  cloing repo from: %s", repo_url)
+        logger.debug("  cloning repo to: %s", directory_path)
+
         repo = Repo.clone_from(
-            f"{source_to_base_url[url_data.source]}/{url_data.owner}/{url_data.repo}.git",
+            repo_url,
             to_path=directory_path,
             multi_options=["--filter=tree:0", "--single-branch"],
         )
@@ -43,6 +49,7 @@ def _get_authors_commits(repo: Repo, recent: Optional[bool] = False) -> Tuple[in
     """
     Uses `git shortlog` to retrieve a list of authors and count the commits they've contributed
     """
+    logger.debug("  getting data about authors from: %s", repo)
     if recent:
         author_data = repo.git.shortlog(
             repo.active_branch, numbered=True, summary=True, since=RECENT_DATE_STR
@@ -59,22 +66,25 @@ def _get_authors_commits(repo: Repo, recent: Optional[bool] = False) -> Tuple[in
         count_str, _ = re.split(r"\s+", line, 1)
         commit_count += int(count_str)
 
+    logger.debug("  authors_count (recent=%s) : %s", recent, authors_count)
+    logger.debug("  commit_count (recent=%s) : %s", recent, commit_count)
     return authors_count, commit_count
-
-
-class ClocMissingError(Exception):
-    ...
 
 
 def fetch_local_data(url_data: UrlMetadata) -> LocalData:
     """
     Calculates data about the git repo based on the local git files
     """
+    logger.info("Fetching data from local git checkout: %s", url_data)
+
     directory_path = f"/tmp/gitgrade/{url_data.source}_{url_data.owner}_{url_data.repo}"
+    logger.debug("  git repo path: %s", directory_path)
+
     repo = _setup_repo(directory_path, url_data)
 
     branch_list = repo.git.ls_remote(heads=True)
     branch_count = len(branch_list.splitlines())
+    logger.debug("  branch_count: %s", branch_count)
 
     authors_count, commit_count = _get_authors_commits(repo)
     authors_count_recent, commit_count_recent = _get_authors_commits(repo, True)
@@ -86,10 +96,11 @@ def fetch_local_data(url_data: UrlMetadata) -> LocalData:
             "Please install cloc, it's required for understanding the size of the codebase."
         ) from error
 
-    cloc = subprocess.run(
-        ["cloc", "--quiet", "--json", directory_path], check=True, capture_output=True
-    )
+    cloc_command = ["cloc", "--quiet", "--json", directory_path]
+    logger.debug("  running command: %s", cloc_command)
+    cloc = subprocess.run(cloc_command, check=True, capture_output=True)
     cloc_stdout = cloc.stdout
+    logger.debug("  cloc_output: %s", cloc_stdout)
     cloc_json = json.loads(cloc_stdout)
 
     return LocalData(

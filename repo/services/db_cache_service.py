@@ -1,13 +1,19 @@
+import logging
 from typing import Tuple
 
 from repo.models import GitRepoData
 from repo.services.data import LocalData, ApiData, UrlMetadata
 
+logger = logging.getLogger(__name__)
+
 
 def check_cache(url_metadata: UrlMetadata) -> Tuple[ApiData, LocalData]:
+    logger.debug("Checking cache for existing data: %s", url_metadata)
+
     found: GitRepoData = GitRepoData.objects.get_by_natural_key(
         source=url_metadata.source, owner=url_metadata.owner, repo=url_metadata.repo
     )
+    logger.info("Found cached data for: %s", url_metadata)
 
     api_data = ApiData(
         days_since_update=found.days_since_update,
@@ -35,6 +41,9 @@ def check_cache(url_metadata: UrlMetadata) -> Tuple[ApiData, LocalData]:
 def patch_cache(
     url_metadata: UrlMetadata, api_data: ApiData, local_data: LocalData
 ) -> None:
+    logger.debug("Updating cached data for: %s", url_metadata)
+    logger.debug("  api_data: %s", api_data)
+    logger.debug("  local_data: %s", local_data)
     git_repo_data = GitRepoData.objects.create_git_repo_data(
         url_metadata=url_metadata, api_data=api_data, local_data=local_data
     )

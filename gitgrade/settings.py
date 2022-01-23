@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.0/ref/settings/
 """
 import os
+import sys
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -22,7 +23,8 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ["SECRET_KEY"]
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+debug_str = os.environ.get("DJANGO_DEBUG", "True")
+DEBUG = debug_str.lower() == "true"
 
 ALLOWED_HOSTS: List[str] = []
 
@@ -30,6 +32,7 @@ ALLOWED_HOSTS: List[str] = []
 
 INSTALLED_APPS = [
     "repo",
+    "bootstrap5",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -116,3 +119,40 @@ STATIC_URL = "static/"
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Formatting: https://docs.python.org/3/library/string.html#formatspec
+# Attributes: https://docs.python.org/3/library/logging.html#logrecord-attributes
+# Date Formatting: https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "default": {
+            "format": "{asctime} {filename}:{lineno:<d} {name} {levelname:>8s}: {message}",
+            "style": "{",
+            "datefmt": "%X",
+        }
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,
+            "formatter": "default",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "DEBUG" if DEBUG else "WARNING",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+            "propagate": False,
+        },
+        "git": {"level": "WARNING"},
+        "github": {"level": "WARNING"},
+        "urllib3": {"level": "WARNING"},
+    },
+}

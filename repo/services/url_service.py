@@ -43,4 +43,7 @@ def identify_source(repo_url: str) -> UrlMetadata:
     owner_name = path_parts[1]
     repo_name = path_parts[2]
 
+    logger.debug("  source: %s", source_name)
+    logger.debug("  owner: %s", owner_name)
+    logger.debug("  repo: %s", repo_name)
     return UrlMetadata(source=source_name, owner=owner_name, repo=repo_name)

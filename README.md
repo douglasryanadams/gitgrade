@@ -8,7 +8,7 @@ See Makefile for valid make commands to run various aspects
 
 # Quickstart
 
-Requires: Python 3.10.1+, Poetry, Make, cloc
+Requires: Python 3.10.1+, Poetry, Make, git, cloc
 
 ```bash
 make init

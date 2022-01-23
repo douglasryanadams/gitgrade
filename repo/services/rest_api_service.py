@@ -13,6 +13,7 @@ BITBUCKET_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
 
 
 def _calculate_date_deltas(repo_json: Dict[str, Any]) -> Tuple[int, int]:
+    logger.debug("  calculating date deltas")
     today = datetime.today()
     updated_on = repo_json.get("updated_on")
     created_on = repo_json.get("created_on")
@@ -31,11 +32,15 @@ def _calculate_date_deltas(repo_json: Dict[str, Any]) -> Tuple[int, int]:
     else:
         days_since_create = -1
 
+    logger.debug("  days_since_create: %s", days_since_create)
+    logger.debug("  days_since_update: %s", days_since_update)
     return days_since_create, days_since_update
 
 
 def _get_pull_request_counts(repo_url: str) -> Tuple[int, int]:
+    logger.debug("  calculating pull request count")
     pulls_url = f"{repo_url}/pullrequests"
+    logger.debug("  making request to: %s", pulls_url)
 
     params_open_only = [("state", "OPEN")]
     pulls_open = requests.get(pulls_url, params=params_open_only)
@@ -49,7 +54,9 @@ def _get_pull_request_counts(repo_url: str) -> Tuple[int, int]:
 
 
 def _get_watcher_count(repo_url: str) -> int:
+    logger.debug("  calculating watcher count")
     watchers_url = f"{repo_url}/watchers"
+    logger.debug("  making request to: %s", watchers_url)
     watchers = requests.get(watchers_url)
     watchers_json = watchers.json()
 
@@ -62,9 +69,11 @@ def _fetch_bitbucket_api_data(url_data: UrlMetadata) -> ApiData:
     # Watchers - 1
     # Pull Requests (open and total) - 2
 
+    logger.debug("  fetching data from bitbucket for: %s", url_data)
     repo_url = (
         f"https://api.bitbucket.org/2.0/repositories/{url_data.owner}/{url_data.repo}"
     )
+    logger.debug("  bitbucket repo_url: %s", repo_url)
     repo = requests.get(repo_url)
     repo_json = repo.json()
 
@@ -89,10 +98,9 @@ def _fetch_github_api_data(url_data: UrlMetadata) -> ApiData:
     # Calls:
     # Repo itself - 1
     # Pull Requests (open and total) - 2
-
+    logger.debug("  fetching data from github for: %s", url_data)
     github_client = Github()
     repo = github_client.get_repo(f"{url_data.owner}/{url_data.repo}")
-    logger.debug(repo)
 
     today = datetime.today()
 
@@ -126,4 +134,5 @@ def fetch_api_data(url_data: UrlMetadata) -> ApiData:
     """
     Make API calls required to get data from APIs
     """
+    logger.info("Fetching data from APIs: %s", url_data)
     return fetch_source_map[url_data.source](url_data)

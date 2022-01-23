@@ -1,2 +1,6 @@
 class UnsupportedURL(Exception):
     ...
+
+
+class ClocMissingError(Exception):
+    ...
