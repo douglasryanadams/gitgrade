@@ -6,7 +6,6 @@ from typing import Generator
 from unittest.mock import patch, Mock
 
 import pytest
-from django.conf import settings
 from freezegun import freeze_time
 
 from repo.services.rest_api_service import (
@@ -57,7 +56,6 @@ def test_fetch_bitbucket(patch_bitbucket_requests: Mock) -> None:  # pylint: dis
 
     Note: Careful running this w/o mock data, Bitbucket has very low rate limits
     """
-    settings.configure()
     source = UrlMetadata(
         source="bitbucket", owner="atlassian", repo="bamboo-tomcat-plugin"
     )

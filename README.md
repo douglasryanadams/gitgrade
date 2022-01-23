@@ -14,7 +14,7 @@ Requires: Python 3.10.1+, Poetry, Make, cloc
 make init
 export SECRET_KEY='whatever you want'
 make run
-open http://localhost:8000/repo/repo-input
+open http://localhost:8000
 ```
 
 Copy a URL for a Github or Bitbucket Repo (example: <https://github.com/git/git>) and put it into the form.
@@ -43,8 +43,8 @@ Notes
 
 TODO
 
-- [ ] Cache Data in DB
-- [ ] Make UI Pretty
+- [x] Cache Data in DB
+- [ ] Make UI Pretty + Add Boostrap
 - [ ] Support for Accounts + Oauth Login to reduce rate limiting
 - [ ] Host it somewhere
 
