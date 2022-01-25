@@ -30,3 +30,6 @@ migrate:
 
 check: lint test security
 
+build:
+	poetry version > gitgrade/version.txt
+	# TODO

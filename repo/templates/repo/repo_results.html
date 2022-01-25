@@ -1,17 +1,31 @@
-{% load bootstrap5 %}
-{% bootstrap_css %}
-{% bootstrap_javascript %}
-{% bootstrap_messages %}
+{% extends "gitgrade/base.html" %}
 
-<div>
+{% block content %}
     <h1>Results!</h1>
-    <div>
-        {{ url_metadata.source }}/{{ url_metadata.owner }}/{{ url_metadata.repo }}
+    <div class="container">
+        <div class="row">
+            <div class="col">
+                <div class="display-3">{{ final_grade }}</div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{ url_metadata.source }}/{{ url_metadata.owner }}/{{ url_metadata.repo }}
+            </div>
+        </div>
+        <div class="row">
+        </div>
+        <div class="row">
+        </div>
+        <div class="row">
+            <div class="col">
+                {{ api_data }}
+            </div>
+        </div>
+        <div class="row">
+            <div class="col">
+                {{ local_data }}
+            </div>
+        </div>
     </div>
-    <div>
-        {{ api_data }}
-    </div>
-    <div>
-        {{ local_data }}
-    </div>
-</div>
+{% endblock %}
