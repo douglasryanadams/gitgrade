@@ -6,15 +6,12 @@ import subprocess
 from datetime import datetime, timedelta
 from typing import Tuple, Optional
 
-from git import Repo  # type: ignore
+from git import Repo, Commit  # type: ignore
 
 from repo.services.data import UrlMetadata, LocalData
 from repo.services.errors import ClocMissingError
 
 logger = logging.getLogger(__name__)
-
-RECENT_DATE = datetime.today() - timedelta(days=183)  # About half a year
-RECENT_DATE_STR = RECENT_DATE.strftime("%Y-%m-%d")
 
 source_to_base_url = {
     "bitbucket": "https://bitbucket.org",
@@ -50,9 +47,12 @@ def _get_authors_commits(repo: Repo, recent: Optional[bool] = False) -> Tuple[in
     Uses `git shortlog` to retrieve a list of authors and count the commits they've contributed
     """
     logger.debug("  getting data about authors from: %s", repo)
+    recent_date = datetime.today() - timedelta(days=183)  # About half a year
+    recent_date_str = recent_date.strftime("%Y-%m-%d")
+
     if recent:
         author_data = repo.git.shortlog(
-            repo.active_branch, numbered=True, summary=True, since=RECENT_DATE_STR
+            repo.active_branch, numbered=True, summary=True, since=recent_date_str
         )
     else:
         author_data = repo.git.shortlog(repo.active_branch, numbered=True, summary=True)
@@ -69,6 +69,15 @@ def _get_authors_commits(repo: Repo, recent: Optional[bool] = False) -> Tuple[in
     logger.debug("  authors_count (recent=%s) : %s", recent, authors_count)
     logger.debug("  commit_count (recent=%s) : %s", recent, commit_count)
     return authors_count, commit_count
+
+
+def _get_days_since_last_commit(repo: Repo) -> int:
+    logger.info("  getting days since last commit from: %s", repo)
+    last_commit: Commit = repo.head.commit
+    last_commit_date = datetime.fromtimestamp(last_commit.committed_date)
+    since_last_commit = datetime.today() - last_commit_date
+    logger.debug("  days since last commit: %s", since_last_commit.days)
+    return since_last_commit.days
 
 
 def fetch_local_data(url_data: UrlMetadata) -> LocalData:
@@ -88,6 +97,7 @@ def fetch_local_data(url_data: UrlMetadata) -> LocalData:
 
     authors_count, commit_count = _get_authors_commits(repo)
     authors_count_recent, commit_count_recent = _get_authors_commits(repo, True)
+    days_since_commit = _get_days_since_last_commit(repo)
 
     try:
         subprocess.run(["cloc", "--version"], check=True)
@@ -104,6 +114,7 @@ def fetch_local_data(url_data: UrlMetadata) -> LocalData:
     cloc_json = json.loads(cloc_stdout)
 
     return LocalData(
+        days_since_commit=days_since_commit,
         commits_total=commit_count,
         commits_recent=commit_count_recent,
         branch_count=branch_count,

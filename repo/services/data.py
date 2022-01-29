@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from enum import Enum
 
 
 @dataclass
@@ -21,6 +22,7 @@ class ApiData:
 
 @dataclass
 class LocalData:
+    days_since_commit: int
     commits_total: int
     commits_recent: int
     branch_count: int
@@ -28,3 +30,11 @@ class LocalData:
     authors_recent: int
     lines_of_code_total: int
     files_total: int
+
+
+class Grade(Enum):
+    A = "A"
+    B = "B"
+    C = "C"
+    D = "D"
+    F = "F"

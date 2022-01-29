@@ -26,6 +26,7 @@ def check_cache(url_metadata: UrlMetadata) -> Tuple[ApiData, LocalData]:
     )
 
     local_data = LocalData(
+        days_since_commit=found.days_since_commit,
         commits_total=found.commits_total,
         commits_recent=found.commits_recent,
         branch_count=found.branch_count,

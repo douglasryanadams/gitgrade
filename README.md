@@ -47,6 +47,11 @@ TODO
 - [ ] Make UI Pretty + Add Boostrap
 - [ ] Support for Accounts + Oauth Login to reduce rate limiting
 - [ ] Host it somewhere
+- [ ] Include sub-grades per metric
+- [ ] Support 'deal breaker' limits (like has no recent authors)
+- [ ] Tooltips for individual metrics
+- [ ] Write out description of how calculation works and include on site
+- [ ] Show recent search results on front page
 
 Additional Metrics
 

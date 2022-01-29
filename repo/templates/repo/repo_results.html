@@ -1,31 +1,95 @@
 {% extends "gitgrade/base.html" %}
 
 {% block content %}
-    <h1>Results!</h1>
     <div class="container">
         <div class="row">
-            <div class="col">
-                <div class="display-3">{{ final_grade }}</div>
+            <div class="col-5">&nbsp;</div>
+            <div class="col text-center">
+                <div class="
+                    card display-1 text-light
+                    {% if final_grade == 'A' %}bg-success{% endif %}
+                    {% if final_grade == 'B' %}bg-success{% endif %}
+                    {% if final_grade == 'C' %}bg-warning{% endif %}
+                    {% if final_grade == 'D' %}bg-danger{% endif %}
+                    {% if final_grade == 'F' %}bg-danger{% endif %}
+                ">
+                    {{ final_grade }}
+                </div>
+            </div>
+            <div class="col-5">&nbsp;</div>
+        </div>
+        <div class="row mt-5 mb-2">
+            <div class="col text-center">
+                {{ metadata.source }}/{{ metadata.owner }}/{{ metadata.repo }}
             </div>
         </div>
         <div class="row">
+            <div class="col-2">&nbsp;</div>
             <div class="col">
-                {{ url_metadata.source }}/{{ url_metadata.owner }}/{{ url_metadata.repo }}
+                <table class="table table-bordered table-small">
+                    <thead>
+                    <tr>
+                        <th scope="col">Property</th>
+                        <th scope="col">Value</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Authors</td>
+                        <td>{{ authors_total }}</td>
+                    </tr>
+                    <tr>
+                        <td>Commits</td>
+                        <td>{{ commits_total }}</td>
+                    </tr>
+                    <tr>
+                        <td>Days Since Commit</td>
+                        <td>{{ days_since_commit }}</td>
+                    </tr>
+                    <tr>
+                        <td>Watchers</td>
+                        <td>{{ watchers }}</td>
+                    </tr>
+                    <tr>
+                        <td>Branches</td>
+                        <td>{{ branch_count }}</td>
+                    </tr>
+                    <tr>
+                        <td>Recent Authors</td>
+                        <td>{{ authors_recent }}</td>
+                    </tr>
+                    <tr>
+                        <td>Recent Commits</td>
+                        <td>{{ commits_recent }}</td>
+                    </tr>
+                    <tr>
+                        <td>Lines of Code</td>
+                        <td>{{ lines_of_code_total }}</td>
+                    </tr>
+                    <tr>
+                        <td>File Count</td>
+                        <td>{{ files_total }}</td>
+                    </tr>
+                    <tr>
+                        <td>Pull Requests Open</td>
+                        <td>{{ pull_requests_open }}</td>
+                    </tr>
+                    <tr>
+                        <td>Pull Requests Total</td>
+                        <td>{{ pull_requests_total }}</td>
+                    </tr>
+                    <tr>
+                        <td>Open Issues</td>
+                        <td>{{ open_issues }}</td>
+                    </tr>
+                    <tr>
+                        <td>Days since Create</td>
+                        <td>{{ days_since_create }}</td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
-        </div>
-        <div class="row">
-        </div>
-        <div class="row">
-        </div>
-        <div class="row">
-            <div class="col">
-                {{ api_data }}
-            </div>
-        </div>
-        <div class="row">
-            <div class="col">
-                {{ local_data }}
-            </div>
+            <div class="col-2">&nbsp;</div>
         </div>
     </div>
 {% endblock %}

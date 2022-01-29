@@ -28,6 +28,7 @@ def fake_api_data():
 @pytest.fixture
 def fake_local_data():
     return LocalData(
+        days_since_commit=-1,
         commits_total=-1,
         commits_recent=-1,
         branch_count=-1,

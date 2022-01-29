@@ -1,6 +1,7 @@
 # pylint: disable=redefined-outer-name, unused-argument, missing-function-docstring,
 
 import json
+from datetime import datetime
 from typing import Generator
 from unittest.mock import patch, Mock
 
@@ -19,7 +20,16 @@ def mock_os() -> Generator[Mock, None, None]:
 
 
 @pytest.fixture
-def mock_gitpython() -> Generator[Mock, None, None]:
+def mock_commit() -> Generator[Mock, None, None]:
+    commit = Mock()
+    commit.committed_date = int(
+        (datetime(2022, 1, 20) - datetime(1970, 1, 1)).total_seconds()
+    )
+    return commit
+
+
+@pytest.fixture
+def mock_gitpython(mock_commit) -> Generator[Mock, None, None]:
     with patch("repo.services.local_git_service.Repo") as mock:
         repo = Mock()
         mock.return_value = repo
@@ -35,6 +45,8 @@ def mock_gitpython() -> Generator[Mock, None, None]:
             " 100\tAuthor Alpha\n 100\tAuthor Beta\n 100\tAuthor Gamma\n 100\tAuthor Delta\n 100\tAuthor Epsilon",
             " 50\tAuthor Alpha\n 50\tAuthor Beta",
         ]
+
+        repo.head.commit = mock_commit
 
         yield mock
 
@@ -59,6 +71,7 @@ def test_fetch_local_data(
     actual = fetch_local_data(url_data)
 
     expected = LocalData(
+        days_since_commit=10,
         commits_total=500,
         commits_recent=100,
         branch_count=2,

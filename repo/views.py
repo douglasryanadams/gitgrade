@@ -7,7 +7,9 @@ from django.shortcuts import render
 from django.http import HttpResponse, HttpRequest
 
 from .forms import RepoForm
+from .services.data import Grade
 from .services.db_cache_service import check_cache, patch_cache
+from .services.grade_calculator_service import calculate_grade
 from .services.rest_api_service import fetch_api_data
 from .services.local_git_service import fetch_local_data
 from .services.url_service import identify_source
@@ -40,12 +42,12 @@ def repo_input(request: HttpRequest) -> HttpResponse:
                 local_data = fetch_local_data(url_metadata)
                 patch_cache(url_metadata, api_data, local_data)
 
-            final_grade: Final = "Placeholder"
+            final_grade: Final[Grade] = calculate_grade(api_data, local_data)
             response_json = {
-                "url_metadata": asdict(url_metadata),
-                "api_data": asdict(api_data),
-                "local_data": asdict(local_data),
-                "final_grade": final_grade,
+                "final_grade": final_grade.value,
+                "metadata": asdict(url_metadata),
+                **asdict(api_data),
+                **asdict(local_data),
             }
             return render(request, "repo/repo_results.html", response_json)
     else:

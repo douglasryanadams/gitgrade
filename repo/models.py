@@ -31,6 +31,7 @@ class GitRepoDataManager(Manager):
             pull_requests_total=api_data.pull_requests_total,
             has_issues=api_data.has_issues,
             open_issues=api_data.open_issues,
+            days_since_commit=local_data.days_since_commit,
             commits_total=local_data.commits_total,
             commits_recent=local_data.commits_recent,
             branch_count=local_data.branch_count,
@@ -62,6 +63,7 @@ class GitRepoData(Model):
     open_issues = IntegerField()
 
     # LocalData
+    days_since_commit = IntegerField()
     commits_total = IntegerField()
     commits_recent = IntegerField()
     branch_count = IntegerField()
