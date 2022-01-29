@@ -32,6 +32,8 @@ def check_cache(url_metadata: UrlMetadata) -> Tuple[ApiData, LocalData]:
         branch_count=found.branch_count,
         authors_total=found.authors_total,
         authors_recent=found.authors_recent,
+        prolific_author_commits_total=found.prolific_author_commits_total,
+        prolific_author_commits_recent=found.prolific_author_commits_recent,
         lines_of_code_total=found.lines_of_code_total,
         files_total=found.files_total,
     )

@@ -3,8 +3,9 @@ import logging
 import os
 import re
 import subprocess
+from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Tuple, Optional
+from typing import Optional
 
 from git import Repo, Commit  # type: ignore
 
@@ -42,11 +43,24 @@ def _setup_repo(directory_path: str, url_data: UrlMetadata) -> Repo:
     return repo
 
 
-def _get_authors_commits(repo: Repo, recent: Optional[bool] = False) -> Tuple[int, int]:
+@dataclass
+class AuthorCommits:
+    authors_count: int
+    commit_count: int
+    prolific_author_commits: int
+
+
+def _get_authors_commits(repo: Repo, recent: Optional[bool] = False) -> AuthorCommits:
     """
     Uses `git shortlog` to retrieve a list of authors and count the commits they've contributed
     """
     logger.debug("  getting data about authors from: %s", repo)
+
+    def _get_count_from_line(this_line: str) -> int:
+        this_line = this_line.strip()
+        count_str, _ = re.split(r"\s+", this_line, 1)
+        return int(count_str)
+
     recent_date = datetime.today() - timedelta(days=183)  # About half a year
     recent_date_str = recent_date.strftime("%Y-%m-%d")
 
@@ -62,13 +76,19 @@ def _get_authors_commits(repo: Repo, recent: Optional[bool] = False) -> Tuple[in
     commit_count = 0
 
     for line in author_data_list:
-        line = line.strip()
-        count_str, _ = re.split(r"\s+", line, 1)
-        commit_count += int(count_str)
+        count_int = _get_count_from_line(line)
+        commit_count += count_int
 
     logger.debug("  authors_count (recent=%s) : %s", recent, authors_count)
     logger.debug("  commit_count (recent=%s) : %s", recent, commit_count)
-    return authors_count, commit_count
+
+    prolific_author_commits = _get_count_from_line(author_data_list[0])
+
+    return AuthorCommits(
+        authors_count=authors_count,
+        commit_count=commit_count,
+        prolific_author_commits=prolific_author_commits,
+    )
 
 
 def _get_days_since_last_commit(repo: Repo) -> int:
@@ -95,8 +115,8 @@ def fetch_local_data(url_data: UrlMetadata) -> LocalData:
     branch_count = len(branch_list.splitlines())
     logger.debug("  branch_count: %s", branch_count)
 
-    authors_count, commit_count = _get_authors_commits(repo)
-    authors_count_recent, commit_count_recent = _get_authors_commits(repo, True)
+    total_author_commits = _get_authors_commits(repo)
+    recent_author_commits = _get_authors_commits(repo, True)
     days_since_commit = _get_days_since_last_commit(repo)
 
     try:
@@ -115,11 +135,13 @@ def fetch_local_data(url_data: UrlMetadata) -> LocalData:
 
     return LocalData(
         days_since_commit=days_since_commit,
-        commits_total=commit_count,
-        commits_recent=commit_count_recent,
+        commits_total=total_author_commits.commit_count,
+        commits_recent=recent_author_commits.commit_count,
         branch_count=branch_count,
-        authors_total=authors_count,
-        authors_recent=authors_count_recent,
+        authors_total=total_author_commits.authors_count,
+        authors_recent=recent_author_commits.authors_count,
+        prolific_author_commits_total=total_author_commits.prolific_author_commits,
+        prolific_author_commits_recent=recent_author_commits.prolific_author_commits,
         lines_of_code_total=cloc_json.get("SUM", {}).get("code", -1),
         files_total=cloc_json.get("SUM", {}).get("nFiles", -1),
     )

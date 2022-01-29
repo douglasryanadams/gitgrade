@@ -28,6 +28,8 @@ class LocalData:
     branch_count: int
     authors_total: int
     authors_recent: int
+    prolific_author_commits_total: int
+    prolific_author_commits_recent: int
     lines_of_code_total: int
     files_total: int
 

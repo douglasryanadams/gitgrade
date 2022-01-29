@@ -37,6 +37,8 @@ class GitRepoDataManager(Manager):
             branch_count=local_data.branch_count,
             authors_total=local_data.authors_total,
             authors_recent=local_data.authors_recent,
+            prolific_author_commits_total=local_data.prolific_author_commits_total,
+            prolific_author_commits_recent=local_data.prolific_author_commits_recent,
             lines_of_code_total=local_data.lines_of_code_total,
             files_total=local_data.files_total,
         )
@@ -69,6 +71,8 @@ class GitRepoData(Model):
     branch_count = IntegerField()
     authors_total = IntegerField()
     authors_recent = IntegerField()
+    prolific_author_commits_total = IntegerField()
+    prolific_author_commits_recent = IntegerField()
     lines_of_code_total = IntegerField()
     files_total = IntegerField()
 

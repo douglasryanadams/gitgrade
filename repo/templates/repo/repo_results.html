@@ -20,13 +20,14 @@
         </div>
         <div class="row mt-5 mb-2">
             <div class="col text-center">
-                {{ metadata.source }}/{{ metadata.owner }}/{{ metadata.repo }}
+                    {{ metadata.source }} | {{ metadata.owner }}/{{ metadata.repo }}
             </div>
         </div>
-        <div class="row">
+        <div class="row my-5">
             <div class="col-2">&nbsp;</div>
             <div class="col">
-                <table class="table table-bordered table-small">
+                <table class="table caption-top">
+                    <caption>Data Used in Grading</caption>
                     <thead>
                     <tr>
                         <th scope="col">Property</th>
@@ -43,16 +44,12 @@
                         <td>{{ commits_total }}</td>
                     </tr>
                     <tr>
+                        <td>Prolific Author Commits</td>
+                        <td>{{ prolific_author_commits_total }}</td>
+                    </tr>
+                    <tr>
                         <td>Days Since Commit</td>
                         <td>{{ days_since_commit }}</td>
-                    </tr>
-                    <tr>
-                        <td>Watchers</td>
-                        <td>{{ watchers }}</td>
-                    </tr>
-                    <tr>
-                        <td>Branches</td>
-                        <td>{{ branch_count }}</td>
                     </tr>
                     <tr>
                         <td>Recent Authors</td>
@@ -61,6 +58,35 @@
                     <tr>
                         <td>Recent Commits</td>
                         <td>{{ commits_recent }}</td>
+                    </tr>
+                    <tr>
+                        <td>Recent Prolific Author Commits</td>
+                        <td>{{ prolific_author_commits_recent }}</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="col-2">&nbsp;</div>
+        </div>
+        <div class="row">
+            <div class="col-2">&nbsp;</div>
+            <div class="col">
+                <table class="table table-small caption-top">
+                    <caption>Other Data Gathered</caption>
+                    <thead>
+                    <tr>
+                        <th scope="col">Property</th>
+                        <th scope="col">Value</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>Watchers</td>
+                        <td>{{ watchers }}</td>
+                    </tr>
+                    <tr>
+                        <td>Branches</td>
+                        <td>{{ branch_count }}</td>
                     </tr>
                     <tr>
                         <td>Lines of Code</td>
@@ -90,6 +116,7 @@
                 </table>
             </div>
             <div class="col-2">&nbsp;</div>
+
         </div>
     </div>
 {% endblock %}

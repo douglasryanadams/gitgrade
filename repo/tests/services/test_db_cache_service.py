@@ -34,6 +34,8 @@ def fake_local_data():
         branch_count=-1,
         authors_total=-1,
         authors_recent=-1,
+        prolific_author_commits_total=-1,
+        prolific_author_commits_recent=-1,
         lines_of_code_total=-1,
         files_total=-1,
     )

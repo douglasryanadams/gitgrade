@@ -42,8 +42,8 @@ def mock_gitpython(mock_commit) -> Generator[Mock, None, None]:
             "b56bd95bbc8f716cb8cbb5fdc18b9b0f00323c6a\trefs/heads/main"
         )
         repo.git.shortlog.side_effect = [
-            " 100\tAuthor Alpha\n 100\tAuthor Beta\n 100\tAuthor Gamma\n 100\tAuthor Delta\n 100\tAuthor Epsilon",
-            " 50\tAuthor Alpha\n 50\tAuthor Beta",
+            " 400\tAuthor Alpha\n 25\tAuthor Beta\n 25\tAuthor Gamma\n 25\tAuthor Delta\n 25\tAuthor Epsilon",
+            " 80\tAuthor Alpha\n 20\tAuthor Beta",
         ]
 
         repo.head.commit = mock_commit
@@ -77,6 +77,8 @@ def test_fetch_local_data(
         branch_count=2,
         authors_total=5,
         authors_recent=2,
+        prolific_author_commits_total=400,
+        prolific_author_commits_recent=80,
         lines_of_code_total=1000,
         files_total=10,
     )
