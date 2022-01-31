@@ -1,7 +1,9 @@
-PHONY: init test lint security run migrate check
+.PHONY: init test lint security run run_dev migrate check build build_docker
 
 
-DJANGO_SETTINGS = DJANGO_SETTINGS_MODULE=gitgrade.settings SECRET_KEY='local'
+DJANGO_SETTINGS = \
+	DJANGO_SETTINGS_MODULE=gitgrade.settings \
+	SECRET_KEY=local
 
 init:
 	poetry install
@@ -14,6 +16,8 @@ lint:
 	poetry run black ./gitgrade ./repo
 	poetry run mypy --strict ./
 	$(DJANGO_SETTINGS) poetry run pylint --load-plugins pylint_django ./gitgrade ./repo
+	hadolint Dockerfile
+	poetry run yamllint docker-compose.yml
 
 security:
 	poetry export --without-hashes -f requirements.txt > tmp_requirements.txt
@@ -22,6 +26,10 @@ security:
 	rm tmp_requirements.txt
 
 run:
+# Runs app as close to production as possible locally
+	docker-compose up --build
+
+run_dev:
 	$(DJANGO_SETTINGS) poetry run python -m django runserver
 
 migrate:
@@ -30,6 +38,9 @@ migrate:
 
 check: lint test security
 
-build:
+build: init check
 	poetry version > gitgrade/version.txt
-	# TODO
+	docker build --tag gitgrade:0.1.0 .
+
+build_docker:
+	docker build --tag gitgrade:0.1.0 .

@@ -8,3 +8,12 @@
 
 # Test DB
 *.sqlite3
+
+# Docker Environment
+.env
+
+# Should Normally Get Deleted
+tmp_requirements.txt
+
+# Build Files
+dist/

@@ -1,0 +1,35 @@
+---
+
+version: "3.9"
+services:
+  # Note: Only use these settings for local development
+  database:
+    image: postgres:14.1
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=gitgrade
+      - POSTGRES_PASSWORD=HrH8gkxzs4KKmKwV
+      - POSTGRES_DB=gitgrade
+
+  gitgrade:
+    image: gitgrade:0.1.0
+    build: .
+    depends_on:
+      - "database"
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SETTINGS_MODULE=gitgrade.settings
+      - DJANGO_DEBUG=false
+      - DATABASE_USERNAME=gitgrade
+      - DATABASE_PASSWORD=HrH8gkxzs4KKmKwV
+      - DATABASE_HOST=database
+    env_file:
+      - .env
+    volumes:
+      - ./docker-wait.sh:/code/docker-wait.sh
+    command: [
+      "/code/docker-wait.sh",
+      "uwsgi", "--http", ":8000", "--module", "gitgrade.wsgi"
+    ]

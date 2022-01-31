@@ -8,11 +8,20 @@ See Makefile for valid make commands to run various aspects
 
 # Quickstart
 
-Requires: Python 3.10.1+, Poetry, Make, git, cloc
+Requires: 
+  - Python 3.10.1+
+  - Poetry
+  - Make
+  - git
+  - cloc
+  - hadolint
+  - yamllint
+  - docker
+  - docker-compose
 
 ```bash
-make init
-export SECRET_KEY='whatever you want'
+make build
+vim .env  # Add 'SECRET_KEY=<whatever_you_want>'
 make run
 open http://localhost:8000
 ```
@@ -36,6 +45,7 @@ Notes
     - Returns list of branches
   - `git shortlog --numbered --summary --all`
     - List contributes and commits per contributor
+- Django + WSGI + Nginx: <https://uwsgi-docs.readthedocs.io/en/latest/tutorials/Django_and_nginx.html>
 
 
 
@@ -44,7 +54,8 @@ Notes
 TODO
 
 - [x] Cache Data in DB
-- [ ] Make UI Pretty + Add Boostrap
+- [x] Make UI Pretty + Add Boostrap
+  - "Pretty" might require additional work, but basic starting place is there
 - [ ] Support for Accounts + Oauth Login to reduce rate limiting
 - [ ] Host it somewhere
 - [ ] Include sub-grades per metric

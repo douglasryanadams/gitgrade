@@ -14,8 +14,6 @@ import sys
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-from typing import List
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Quick-start development settings - unsuitable for production
@@ -25,8 +23,9 @@ SECRET_KEY = os.environ["SECRET_KEY"]
 # SECURITY WARNING: don't run with debug turned on in production!
 debug_str = os.environ.get("DJANGO_DEBUG", "True")
 DEBUG = debug_str.lower() == "true"
+print(f"{DEBUG=}")
 
-ALLOWED_HOSTS: List[str] = []
+ALLOWED_HOSTS = ["gitgrade.net", ".gitgrade.net"]
 
 # Application definition
 
@@ -76,12 +75,30 @@ WSGI_APPLICATION = "gitgrade.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
-    }
+DATABASE_USERNAME = os.environ.get("DATABASE_USERNAME", "invalid_default")
+DATABASE_PASSWORD = os.environ.get("DATABASE_PASSWORD", "invalid_default")
+DATABASE_HOST = os.environ.get("DATABASE_HOST", "database")
+
+if not DEBUG and "invalid_default" in (DATABASE_USERNAME, DATABASE_PASSWORD):
+    raise Exception(
+        "DATABASE_USERNAME and DATABASE_PASSWORD required when not in DEBUG mode."
+    )
+
+TEST_DATABASE = {
+    "ENGINE": "django.db.backends.sqlite3",
+    "NAME": BASE_DIR / "db.sqlite3",
 }
+
+PRODUCTION_DATABASE = {
+    "ENGINE": "django.db.backends.postgresql_psycopg2",
+    "NAME": "gitgrade",
+    "USER": DATABASE_USERNAME,
+    "PASSWORD": DATABASE_PASSWORD,
+    "HOST": DATABASE_HOST,
+    "PORT": "5432",
+}
+
+DATABASES = {"default": TEST_DATABASE if DEBUG else PRODUCTION_DATABASE}
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators

@@ -3,6 +3,24 @@
 {% block content %}
     <div class="container">
         <div class="row">
+            <div class="col-2">&nbsp;</div>
+            <div class="col mb-3">
+                <div class="card bg-secondary bg-gradient text-white p-4">
+                    <h3>Disclaimer</h3>
+                    <p>
+                        The information on this page is a recommendation presented based on my specific opinions about
+                        what is valuable in an open source git project.
+                    </p>
+                    <p>
+                        As of Jan 30, 2022 - This site is also in a very early state and undergoing continuous iteration on how
+                        it evaluates the quality of a git repository. As such, the ratings provided here are highly subject to
+                        change.
+                    </p>
+                </div>
+            </div>
+            <div class="col-2">&nbsp;</div>
+        </div>
+        <div class="row">
             <div class="col-5">&nbsp;</div>
             <div class="col text-center">
                 <div class="
@@ -20,7 +38,7 @@
         </div>
         <div class="row mt-5 mb-2">
             <div class="col text-center">
-                    {{ metadata.source }} | {{ metadata.owner }}/{{ metadata.repo }}
+                {{ metadata.source }} | {{ metadata.owner }}/{{ metadata.repo }}
             </div>
         </div>
         <div class="row my-5">
