@@ -1,10 +1,11 @@
 # pylint: disable=redefined-outer-name, unused-argument, missing-function-docstring,
 
 import pytest
+from freezegun import freeze_time
 
-from repo.models import GitRepoData
 from repo.services.data import UrlMetadata, ApiData, LocalData
 from repo.services.db_cache_service import patch_cache, check_cache
+from repo.services.errors import CacheMiss
 
 
 @pytest.fixture
@@ -43,9 +44,24 @@ def fake_local_data():
 
 @pytest.mark.django_db
 def test_cache(fake_url_metadata, fake_api_data, fake_local_data):
-    with pytest.raises(GitRepoData.DoesNotExist):
+    with pytest.raises(CacheMiss):
         check_cache(fake_url_metadata)
 
     patch_cache(fake_url_metadata, fake_api_data, fake_local_data)
     found = check_cache(fake_url_metadata)
     assert found
+
+
+@pytest.mark.django_db
+def test_cache_expired_update(fake_url_metadata, fake_api_data, fake_local_data):
+    patch_cache(fake_url_metadata, fake_api_data, fake_local_data)
+
+    with freeze_time("2100-01-01"):  # Date in the far future, I would have been 114
+        with pytest.raises(CacheMiss):
+            check_cache(fake_url_metadata)
+
+    fake_api_data.days_since_create = 10
+    patch_cache(fake_url_metadata, fake_api_data, fake_local_data)
+    found = check_cache(fake_url_metadata)
+    assert found
+    assert found[0].days_since_create == 10

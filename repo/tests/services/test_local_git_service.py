@@ -20,6 +20,12 @@ def mock_os() -> Generator[Mock, None, None]:
 
 
 @pytest.fixture
+def mock_shutil() -> Generator[Mock, None, None]:
+    with patch("repo.services.local_git_service.shutil") as mock:
+        yield mock
+
+
+@pytest.fixture
 def mock_commit() -> Generator[Mock, None, None]:
     commit = Mock()
     commit.committed_date = int(
@@ -65,7 +71,7 @@ def mock_subprocess() -> Generator[Mock, None, None]:
 
 @freeze_time("2022-01-30")
 def test_fetch_local_data(
-    mock_os: Mock, mock_gitpython: Mock, mock_subprocess: Mock
+    mock_os: Mock, mock_shutil: Mock, mock_gitpython: Mock, mock_subprocess: Mock
 ) -> None:
     url_data = UrlMetadata(source="github", owner="git", repo="git")
     actual = fetch_local_data(url_data)
@@ -84,3 +90,4 @@ def test_fetch_local_data(
     )
 
     assert actual == expected
+    mock_shutil.rmtree.assert_called_with("/tmp/gitgrade/github_git_git")

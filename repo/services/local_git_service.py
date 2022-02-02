@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import re
+import shutil
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timedelta
@@ -109,39 +110,42 @@ def fetch_local_data(url_data: UrlMetadata) -> LocalData:
     directory_path = f"/tmp/gitgrade/{url_data.source}_{url_data.owner}_{url_data.repo}"
     logger.debug("  git repo path: %s", directory_path)
 
-    repo = _setup_repo(directory_path, url_data)
-
-    branch_list = repo.git.ls_remote(heads=True)
-    branch_count = len(branch_list.splitlines())
-    logger.debug("  branch_count: %s", branch_count)
-
-    total_author_commits = _get_authors_commits(repo)
-    recent_author_commits = _get_authors_commits(repo, True)
-    days_since_commit = _get_days_since_last_commit(repo)
-
     try:
-        subprocess.run(["cloc", "--version"], check=True)
-    except subprocess.CalledProcessError as error:
-        raise ClocMissingError(
-            "Please install cloc, it's required for understanding the size of the codebase."
-        ) from error
+        repo = _setup_repo(directory_path, url_data)
 
-    cloc_command = ["cloc", "--quiet", "--json", directory_path]
-    logger.debug("  running command: %s", cloc_command)
-    cloc = subprocess.run(cloc_command, check=True, capture_output=True)
-    cloc_stdout = cloc.stdout
-    logger.debug("  cloc_output: %s", cloc_stdout)
-    cloc_json = json.loads(cloc_stdout)
+        branch_list = repo.git.ls_remote(heads=True)
+        branch_count = len(branch_list.splitlines())
+        logger.debug("  branch_count: %s", branch_count)
 
-    return LocalData(
-        days_since_commit=days_since_commit,
-        commits_total=total_author_commits.commit_count,
-        commits_recent=recent_author_commits.commit_count,
-        branch_count=branch_count,
-        authors_total=total_author_commits.authors_count,
-        authors_recent=recent_author_commits.authors_count,
-        prolific_author_commits_total=total_author_commits.prolific_author_commits,
-        prolific_author_commits_recent=recent_author_commits.prolific_author_commits,
-        lines_of_code_total=cloc_json.get("SUM", {}).get("code", -1),
-        files_total=cloc_json.get("SUM", {}).get("nFiles", -1),
-    )
+        total_author_commits = _get_authors_commits(repo)
+        recent_author_commits = _get_authors_commits(repo, True)
+        days_since_commit = _get_days_since_last_commit(repo)
+
+        try:
+            subprocess.run(["cloc", "--version"], check=True)
+        except subprocess.CalledProcessError as error:
+            raise ClocMissingError(
+                "Please install cloc, it's required for understanding the size of the codebase."
+            ) from error
+
+        cloc_command = ["cloc", "--quiet", "--json", directory_path]
+        logger.debug("  running command: %s", cloc_command)
+        cloc = subprocess.run(cloc_command, check=True, capture_output=True)
+        cloc_stdout = cloc.stdout
+        logger.debug("  cloc_output: %s", cloc_stdout)
+        cloc_json = json.loads(cloc_stdout)
+
+        return LocalData(
+            days_since_commit=days_since_commit,
+            commits_total=total_author_commits.commit_count,
+            commits_recent=recent_author_commits.commit_count,
+            branch_count=branch_count,
+            authors_total=total_author_commits.authors_count,
+            authors_recent=recent_author_commits.authors_count,
+            prolific_author_commits_total=total_author_commits.prolific_author_commits,
+            prolific_author_commits_recent=recent_author_commits.prolific_author_commits,
+            lines_of_code_total=cloc_json.get("SUM", {}).get("code", -1),
+            files_total=cloc_json.get("SUM", {}).get("nFiles", -1),
+        )
+    finally:
+        shutil.rmtree(directory_path)
