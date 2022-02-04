@@ -3,5 +3,5 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("", views.repo_input, name="landing"),
+    path("github", views.github_authorization, name="github"),
 ]

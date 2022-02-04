@@ -25,7 +25,7 @@ debug_str = os.environ.get("DJANGO_DEBUG", "True")
 DEBUG = debug_str.lower() == "true"
 print(f"{DEBUG=}")
 
-ALLOWED_HOSTS = ["gitgrade.net", ".gitgrade.net"]
+ALLOWED_HOSTS = ["127.0.0.1", "localhost", "gitgrade.net", ".gitgrade.net"]
 
 # Application definition
 
@@ -65,6 +65,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "gitgrade.context_processors.github_sso_url",
             ],
         },
     },
@@ -177,3 +178,9 @@ LOGGING = {
         "urllib3": {"level": "WARNING"},
     },
 }
+
+# SSO Settings
+
+GITGRADE_BASE_URL = os.environ.get("GITGRADE_BASE_URL", "https://gitigrade.net")
+GITHUB_SSO_CLIENT_ID = os.environ.get("GITHUB_SSO_CLIENT_ID", "invalid_default")
+GITHUB_SSO_CLIENT_SECRET = os.environ.get("GITHUB_SSO_CLIENT_SECRET", "invalid_default")

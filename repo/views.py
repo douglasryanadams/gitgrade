@@ -17,13 +17,6 @@ from .services.url_service import identify_source
 logger = logging.getLogger(__name__)
 
 
-def index(_: HttpRequest) -> HttpResponse:
-    """
-    Placeholder page for this path
-    """
-    return HttpResponse("Hello, world")
-
-
 def repo_input(request: HttpRequest) -> HttpResponse:
     """
     Returns a form for collecting the Repo URL we want to evaluate
