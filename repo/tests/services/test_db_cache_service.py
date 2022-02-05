@@ -3,14 +3,14 @@
 import pytest
 from freezegun import freeze_time
 
-from repo.services.data import UrlMetadata, ApiData, LocalData
+from repo.services.data import RepoRequestData, ApiData, LocalData
 from repo.services.db_cache_service import patch_cache, check_cache
 from repo.services.errors import CacheMiss
 
 
 @pytest.fixture
 def fake_url_metadata():
-    return UrlMetadata(source="test-source", owner="test-owner", repo="test-repo")
+    return RepoRequestData(source="test-source", owner="test-owner", repo="test-repo")
 
 
 @pytest.fixture

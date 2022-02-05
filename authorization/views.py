@@ -34,7 +34,7 @@ def github_authorization(request: HttpRequest) -> HttpResponse:
 
     send_home = redirect('/')
     send_home.set_cookie(
-        'github_token',
+        settings.GITHUB_TOKEN_KEY,
         value=json_response['access_token'],
         max_age=24 * 60 * 60,  # age in seconds
         path='/'

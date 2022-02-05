@@ -10,7 +10,7 @@ from django.db.models import (
     UniqueConstraint,
 )
 
-from repo.services.data import UrlMetadata, ApiData, LocalData
+from repo.services.data import RepoRequestData, ApiData, LocalData
 
 
 class GitRepoDataManager(Manager):
@@ -18,7 +18,7 @@ class GitRepoDataManager(Manager):
         return self.get(source=source, owner=owner, repo=repo)
 
     def create_git_repo_data(
-        self, url_metadata: UrlMetadata, api_data: ApiData, local_data: LocalData
+        self, url_metadata: RepoRequestData, api_data: ApiData, local_data: LocalData
     ):
         git_repo_data = self.create(
             source=url_metadata.source,

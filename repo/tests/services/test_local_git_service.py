@@ -8,7 +8,7 @@ from unittest.mock import patch, Mock
 import pytest
 from freezegun import freeze_time
 
-from repo.services.data import UrlMetadata, LocalData
+from repo.services.data import RepoRequestData, LocalData
 from repo.services.local_git_service import fetch_local_data
 
 
@@ -73,7 +73,7 @@ def mock_subprocess() -> Generator[Mock, None, None]:
 def test_fetch_local_data(
     mock_os: Mock, mock_shutil: Mock, mock_gitpython: Mock, mock_subprocess: Mock
 ) -> None:
-    url_data = UrlMetadata(source="github", owner="git", repo="git")
+    url_data = RepoRequestData(source="github", owner="git", repo="git")
     actual = fetch_local_data(url_data)
 
     expected = LocalData(

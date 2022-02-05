@@ -5,7 +5,7 @@ from typing import Tuple
 from django.core.exceptions import ObjectDoesNotExist
 
 from repo.models import GitRepoData
-from repo.services.data import LocalData, ApiData, UrlMetadata
+from repo.services.data import LocalData, ApiData, RepoRequestData
 from repo.services.errors import CacheMiss
 
 logger = logging.getLogger(__name__)
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 RECENT_DAYS = 30
 
 
-def check_cache(url_metadata: UrlMetadata) -> Tuple[ApiData, LocalData]:
+def check_cache(url_metadata: RepoRequestData) -> Tuple[ApiData, LocalData]:
     logger.debug("Checking cache for existing data: %s", url_metadata)
 
     try:
@@ -57,7 +57,7 @@ def check_cache(url_metadata: UrlMetadata) -> Tuple[ApiData, LocalData]:
 
 
 def patch_cache(
-    url_metadata: UrlMetadata, api_data: ApiData, local_data: LocalData
+    url_metadata: RepoRequestData, api_data: ApiData, local_data: LocalData
 ) -> None:
     logger.debug("Updating cached data for: %s", url_metadata)
     logger.debug("  api_data: %s", api_data)

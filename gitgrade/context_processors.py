@@ -1,5 +1,5 @@
 import logging
-from typing import Dict
+from typing import Dict, Optional
 from urllib.parse import urlencode
 
 from django.conf import settings
@@ -34,3 +34,10 @@ def github_sso_url(request: HttpRequest) -> Dict[str, str]:
 
     base_url = "https://github.com/login/oauth/authorize"
     return {"GITHUB_SSO_URL": f"{base_url}?{param_string}"}
+
+
+def github_username(request: HttpRequest) -> Dict[str, Optional[str]]:
+    logger.debug("Rendering github token from cookie")
+    token = request.COOKIES.get(settings.GITHUB_TOKEN_KEY, "notset")
+    logger.debug("  token: %s", token)
+    return {"GITHUB_TOKEN": None if token == "notset" else token}

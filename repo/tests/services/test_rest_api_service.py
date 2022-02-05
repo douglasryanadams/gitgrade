@@ -12,7 +12,7 @@ from repo.services.rest_api_service import (
     _fetch_bitbucket_api_data,
     _fetch_github_api_data,
 )
-from repo.services.data import UrlMetadata, ApiData
+from repo.services.data import RepoRequestData, ApiData
 from repo.tests import bitbucket_objects
 
 
@@ -56,7 +56,7 @@ def test_fetch_bitbucket(patch_bitbucket_requests: Mock) -> None:  # pylint: dis
 
     Note: Careful running this w/o mock data, Bitbucket has very low rate limits
     """
-    source = UrlMetadata(
+    source = RepoRequestData(
         source="bitbucket", owner="atlassian", repo="bamboo-tomcat-plugin"
     )
     actual = _fetch_bitbucket_api_data(source)
@@ -100,7 +100,7 @@ def patch_github_client() -> Generator[Mock, None, None]:
 
 @freeze_time("2022-01-30")
 def test_fetch_github(patch_github_client: Mock) -> None:
-    source = UrlMetadata(source="github", owner="git", repo="git")
+    source = RepoRequestData(source="github", owner="git", repo="git")
     actual = _fetch_github_api_data(source)
     expected = ApiData(
         days_since_create=4939,

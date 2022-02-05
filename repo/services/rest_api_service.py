@@ -5,7 +5,7 @@ from typing import Dict, Any, Tuple, cast
 import requests
 from github import Github
 
-from repo.services.data import UrlMetadata, ApiData
+from repo.services.data import RepoRequestData, ApiData
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +63,7 @@ def _get_watcher_count(repo_url: str) -> int:
     return cast(int, watchers_json.get("size", -1))
 
 
-def _fetch_bitbucket_api_data(url_data: UrlMetadata) -> ApiData:
+def _fetch_bitbucket_api_data(url_data: RepoRequestData) -> ApiData:
     # 1 Call Each:
     # Repo itself - 1
     # Watchers - 1
@@ -94,13 +94,13 @@ def _fetch_bitbucket_api_data(url_data: UrlMetadata) -> ApiData:
     )
 
 
-def _fetch_github_api_data(url_data: UrlMetadata) -> ApiData:
+def _fetch_github_api_data(repo_request_data: RepoRequestData) -> ApiData:
     # Calls:
     # Repo itself - 1
     # Pull Requests (open and total) - 2
-    logger.debug("  fetching data from github for: %s", url_data)
-    github_client = Github()
-    repo = github_client.get_repo(f"{url_data.owner}/{url_data.repo}")
+    logger.debug("  fetching data from github for: %s", repo_request_data)
+    github_client = Github(login_or_token=repo_request_data.sso_token)
+    repo = github_client.get_repo(f"{repo_request_data.owner}/{repo_request_data.repo}")
 
     today = datetime.today()
 
@@ -130,7 +130,7 @@ fetch_source_map = {
 }
 
 
-def fetch_api_data(url_data: UrlMetadata) -> ApiData:
+def fetch_api_data(url_data: RepoRequestData) -> ApiData:
     """
     Make API calls required to get data from APIs
     """

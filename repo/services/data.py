@@ -1,12 +1,14 @@
 from dataclasses import dataclass
 from enum import Enum
+from typing import Optional
 
 
 @dataclass
-class UrlMetadata:
+class RepoRequestData:
     source: str
     owner: str
     repo: str
+    sso_token: Optional[str] = None
 
 
 @dataclass

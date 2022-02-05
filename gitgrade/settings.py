@@ -66,6 +66,7 @@ TEMPLATES = [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
                 "gitgrade.context_processors.github_sso_url",
+                "gitgrade.context_processors.github_username",
             ],
         },
     },
@@ -184,3 +185,4 @@ LOGGING = {
 GITGRADE_BASE_URL = os.environ.get("GITGRADE_BASE_URL", "https://gitigrade.net")
 GITHUB_SSO_CLIENT_ID = os.environ.get("GITHUB_SSO_CLIENT_ID", "invalid_default")
 GITHUB_SSO_CLIENT_SECRET = os.environ.get("GITHUB_SSO_CLIENT_SECRET", "invalid_default")
+GITHUB_TOKEN_KEY = "github_token"

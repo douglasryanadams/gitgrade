@@ -2,6 +2,7 @@ import logging
 from dataclasses import asdict
 from typing import Final
 
+from django.conf import settings
 from django.shortcuts import render
 from django.http import HttpResponse, HttpRequest
 
@@ -26,19 +27,22 @@ def repo_input(request: HttpRequest) -> HttpResponse:
         form = RepoForm(request.POST)
         if form.is_valid():
             repo_url = form.cleaned_data["repo_url"]
-            url_metadata = identify_source(repo_url)
+            repo_data = identify_source(repo_url)
 
             try:
-                api_data, local_data = check_cache(url_metadata)
+                api_data, local_data = check_cache(repo_data)
             except CacheMiss:
-                api_data = fetch_api_data(url_metadata)
-                local_data = fetch_local_data(url_metadata)
-                patch_cache(url_metadata, api_data, local_data)
+                github_token = request.COOKIES.get(settings.GITHUB_TOKEN_KEY)
+                repo_data.sso_token = github_token
+
+                api_data = fetch_api_data(repo_data)
+                local_data = fetch_local_data(repo_data)
+                patch_cache(repo_data, api_data, local_data)
 
             final_grade: Final[Grade] = calculate_grade(api_data, local_data)
             response_json = {
                 "final_grade": final_grade.value,
-                "metadata": asdict(url_metadata),
+                "metadata": asdict(repo_data),
                 **asdict(api_data),
                 **asdict(local_data),
             }

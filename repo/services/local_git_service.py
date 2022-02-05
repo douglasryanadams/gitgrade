@@ -10,7 +10,7 @@ from typing import Optional
 
 from git import Repo, Commit  # type: ignore
 
-from repo.services.data import UrlMetadata, LocalData
+from repo.services.data import RepoRequestData, LocalData
 from repo.services.errors import ClocMissingError
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ source_to_base_url = {
 }
 
 
-def _setup_repo(directory_path: str, url_data: UrlMetadata) -> Repo:
+def _setup_repo(directory_path: str, url_data: RepoRequestData) -> Repo:
     """
     Either clones or pulls the repo so that it has the latest data
     """
@@ -101,7 +101,7 @@ def _get_days_since_last_commit(repo: Repo) -> int:
     return since_last_commit.days
 
 
-def fetch_local_data(url_data: UrlMetadata) -> LocalData:
+def fetch_local_data(url_data: RepoRequestData) -> LocalData:
     """
     Calculates data about the git repo based on the local git files
     """

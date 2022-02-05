@@ -10,21 +10,22 @@
     <div class="container-fluid">
         <a class="navbar-brand" href="/">Git Grade (alpha: 0.1.0)</a>
         <div class="justify-content-end">
-            <a
-                class="btn btn-outline-success"
-                href="{{ GITHUB_SSO_URL }}"
-            >
-                Sign in with Github
-            </a>
+            {% if GITHUB_TOKEN %}
+                <button disabled class="btn btn-success">
+                    Signed In to Github
+                </button>
+            {% else %}
+                <a class="btn btn-outline-success" href="{{ GITHUB_SSO_URL }}">
+                    Sign in with Github
+                </a>
+            {% endif %}
         </div>
     </div>
 </nav>
 <div class="container">
-    <div class="row">
-        <div class="col" style="height: 40px;">
+    <div class="row mt-5">
+        <div class="col">
+            {% block content %}{% endblock %}
         </div>
-    </div>
-    <div class="row">
-        {% block content %}{% endblock %}
     </div>
 </div>

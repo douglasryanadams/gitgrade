@@ -4,7 +4,7 @@ from typing import Union
 import pytest
 from django.core.exceptions import ValidationError
 
-from repo.services.data import UrlMetadata
+from repo.services.data import RepoRequestData
 from repo.services.errors import UnsupportedURL
 from repo.services.url_service import identify_source
 
@@ -14,21 +14,21 @@ from repo.services.url_service import identify_source
     [
         (
             "https://github.com/git/git",
-            UrlMetadata(source="github", owner="git", repo="git"),
+            RepoRequestData(source="github", owner="git", repo="git"),
         ),
         (
             "https://github.com/apache/httpd",
-            UrlMetadata(source="github", owner="apache", repo="httpd"),
+            RepoRequestData(source="github", owner="apache", repo="httpd"),
         ),
         (
             "https://bitbucket.org/atlassian/bamboo-tomcat-plugin/src/master/",
-            UrlMetadata(
+            RepoRequestData(
                 source="bitbucket", owner="atlassian", repo="bamboo-tomcat-plugin"
             ),
         ),
         (
             "https://bitbucket.org/schae/test-test-test/src/master/",
-            UrlMetadata(source="bitbucket", owner="schae", repo="test-test-test"),
+            RepoRequestData(source="bitbucket", owner="schae", repo="test-test-test"),
         ),
         (
             "https://opensource.ncsa.illinois.edu/bitbucket/projects/ERGO/repos/tutorial/browse",
@@ -38,11 +38,13 @@ from repo.services.url_service import identify_source
         ("gobbledygook", ValidationError),
     ],
 )
-def test_identify_source(url: str, expected: Union[UrlMetadata, BaseException]) -> None:
+def test_identify_source(
+    url: str, expected: Union[RepoRequestData, BaseException]
+) -> None:
     """
     Should make sure we're parsing repo paths correctly and document our supported/unsupported URL examples
     """
-    if isinstance(expected, UrlMetadata):
+    if isinstance(expected, RepoRequestData):
         actual_metadata = identify_source(url)
         assert actual_metadata == expected
     else:

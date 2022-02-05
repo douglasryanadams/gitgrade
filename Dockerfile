@@ -14,6 +14,7 @@ RUN apt-get update \
     && pip install --no-cache-dir poetry==1.1.12
 
 COPY gitgrade /code/gitgrade
+COPY authorization /code/authorization
 COPY repo /code/repo
 
 COPY poetry.lock \
