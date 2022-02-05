@@ -20,6 +20,7 @@ COPY repo /code/repo
 COPY poetry.lock \
      pyproject.toml \
      manage.py \
+     docker-wait.sh \
      /code/
 
 WORKDIR /code
@@ -30,4 +31,4 @@ RUN poetry config virtualenvs.create false \
     && chown -R gitgrade /code
 
 USER gitgrade
-CMD ["uwsgi", "--http", ":8000", "--module", "gitgrade.wsgi"]
+CMD ["/code/docker-wait.sh", "uwsgi", "--http", ":8000", "--module", "gitgrade.wsgi"]

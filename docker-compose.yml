@@ -4,7 +4,8 @@ version: "3.9"
 services:
   # Note: Only use these settings for local development
   database:
-    image: postgres:14.1
+    # Same version as AWS Aurora Serverless
+    image: postgres:10.14
     ports:
       - "5432:5432"
     environment:
@@ -13,7 +14,6 @@ services:
       - POSTGRES_DB=gitgrade
 
   gitgrade:
-    image: gitgrade:0.1.0
     build: .
     depends_on:
       - "database"
@@ -27,9 +27,3 @@ services:
       - DATABASE_HOST=database
     env_file:
       - .env
-    volumes:
-      - ./docker-wait.sh:/code/docker-wait.sh
-    command: [
-      "/code/docker-wait.sh",
-      "uwsgi", "--http", ":8000", "--module", "gitgrade.wsgi"
-    ]

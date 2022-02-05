@@ -37,13 +37,21 @@ SECRET_KEY=local-testing-key  # Used for CSRF token in Django
 GITGRADE_BASE_URL=http://localhost:8000  # Used for SSO/OAuth redirects
 GITHUB_SSO_CLIENT_ID=<client id>  # Used for the server side calls for OAuth
 GITHUB_SSO_CLIENT_SECRET=<client secret>  # Used for server side calls for OAuth
+
+# If using a DB outside of dev:
+
+DATABASE_USERNAME=gitgrade
+DATABASE_PASSWORD=<database password>
+DATABSE_HOST=<database hostname>
 ```
 
 To get the Github SSO ID and Secret, you can either create your own Github app or contact <admin@builtonbits.com> and request a new secret key for development purposes.
 
+
 ## Pushing Changes
 
 Currently, the Makefile contains some commands for pushing updates to the hosted version of gitgrade.net, consider this an example for pushing the container to AWS. The commands will not work for others unless <admin@builtonbits.com> has given your AWS account access. In the future, environment variables may be used here to make it easier for others to use to host their own servers.
+
 
 ----
 

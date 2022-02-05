@@ -1,4 +1,4 @@
-.PHONY: init test lint security run run_dev migrate check build build_docker push
+.PHONY: init test lint security run run_dev migrate check version build build_docker push
 
 
 DJANGO_SETTINGS = \
@@ -38,16 +38,18 @@ migrate:
 
 check: lint test security
 
-build: init check
-	poetry version > gitgrade/version.txt
-	docker build --tag gitgrade:0.1.0 .
+version:
+	poetry version | awk '{print $$2}' > gitgrade/version.txt
+
 
 build_docker:
-	docker build --tag gitgrade:0.1.0 .
+	docker build --tag gitgrade:$$(cat gitgrade/version.txt) .
+
+build: init check version build_docker
 
 push: init check
 	aws ecr get-login-password --region us-west-2 \
 		| docker login --username AWS --password-stdin 746433511096.dkr.ecr.us-west-2.amazonaws.com
-	docker build --tag 746433511096.dkr.ecr.us-west-2.amazonaws.com/gitgrade:0.1.0 .
-	docker push 746433511096.dkr.ecr.us-west-2.amazonaws.com/gitgrade:0.1.0
+	docker build --tag 746433511096.dkr.ecr.us-west-2.amazonaws.com/gitgrade:$$(cat gitgrade/version.txt) .
+	docker push 746433511096.dkr.ecr.us-west-2.amazonaws.com/gitgrade:$$(cat gitgrade/version.txt)
 
