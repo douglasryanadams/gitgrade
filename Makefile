@@ -1,4 +1,4 @@
-.PHONY: init test lint security run run_dev migrate check build build_docker
+.PHONY: init test lint security run run_dev migrate check build build_docker push
 
 
 DJANGO_SETTINGS = \
@@ -44,3 +44,10 @@ build: init check
 
 build_docker:
 	docker build --tag gitgrade:0.1.0 .
+
+push: init check
+	aws ecr get-login-password --region us-west-2 \
+		| docker login --username AWS --password-stdin 746433511096.dkr.ecr.us-west-2.amazonaws.com
+	docker build --tag 746433511096.dkr.ecr.us-west-2.amazonaws.com/gitgrade:0.1.0 .
+	docker push 746433511096.dkr.ecr.us-west-2.amazonaws.com/gitgrade:0.1.0
+

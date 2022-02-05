@@ -8,7 +8,8 @@ See Makefile for valid make commands to run various aspects
 
 # Quickstart
 
-Requires: 
+Requires:
+
   - Python 3.10.1+
   - Poetry
   - Make
@@ -18,15 +19,31 @@ Requires:
   - yamllint
   - docker
   - docker-compose
+  - awscli
 
 ```bash
 make build
-vim .env  # Add 'SECRET_KEY=<whatever_you_want>'
+vim .env  # Add Environment Variables (see below) 
 make run
 open http://localhost:8000
 ```
 
 Copy a URL for a Github or Bitbucket Repo (example: <https://github.com/git/git>) and put it into the form.
+
+## Environment Variables
+
+```bash
+SECRET_KEY=local-testing-key  # Used for CSRF token in Django
+GITGRADE_BASE_URL=http://localhost:8000  # Used for SSO/OAuth redirects
+GITHUB_SSO_CLIENT_ID=<client id>  # Used for the server side calls for OAuth
+GITHUB_SSO_CLIENT_SECRET=<client secret>  # Used for server side calls for OAuth
+```
+
+To get the Github SSO ID and Secret, you can either create your own Github app or contact <admin@builtonbits.com> and request a new secret key for development purposes.
+
+## Pushing Changes
+
+Currently, the Makefile contains some commands for pushing updates to the hosted version of gitgrade.net, consider this an example for pushing the container to AWS. The commands will not work for others unless <admin@builtonbits.com> has given your AWS account access. In the future, environment variables may be used here to make it easier for others to use to host their own servers.
 
 ----
 
