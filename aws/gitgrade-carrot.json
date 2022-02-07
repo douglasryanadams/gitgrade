@@ -1,0 +1,108 @@
+{
+  "containerDefinitions": [
+    {
+      "name": "gitgrade-carrot",
+      "image": "746433511096.dkr.ecr.us-west-2.amazonaws.com/gitgrade:0.1.3",
+      "cpu": 0,
+      "links": [],
+      "portMappings": [
+        {
+          "containerPort": 8000,
+          "hostPort": 8000,
+          "protocol": "tcp"
+        }
+      ],
+      "essential": true,
+      "entryPoint": [],
+      "command": [],
+      "environment": [
+        {
+          "name": "DJANGO_SETTINGS_MODULE",
+          "value": "gitgrade.settings"
+        },
+        {
+          "name": "DJANGO_DEBUG",
+          "value": "false"
+        },
+        {
+          "name": "DATABASE_USERNAME",
+          "value": "gitgrade"
+        },
+        {
+          "name": "GITGRADE_BASE_URL",
+          "value": "https://gitgrade.net"
+        },
+        {
+          "name": "DATABASE_HOST",
+          "value": "gitgrade-banana.cluster-cig5be1au8zi.us-west-2.rds.amazonaws.com"
+        },
+        {
+          "name": "GITHUB_SSO_CLIENT_ID",
+          "value": "1785a8de224d6a00599e"
+        }
+      ],
+      "environmentFiles": [],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "secrets": [
+        {
+          "name": "SECRET_KEY",
+          "valueFrom": "/gitgrade/django-secret-key"
+        },
+        {
+          "name": "DATABASE_PASSWORD",
+          "valueFrom": "/gitgrade/database/password"
+        },
+        {
+          "name": "GITHUB_SSO_CLIENT_SECRET",
+          "valueFrom": "/gitgrade/github/sso_client_secret"
+        }
+      ],
+      "dnsServers": [],
+      "dnsSearchDomains": [],
+      "extraHosts": [],
+      "dockerSecurityOptions": [],
+      "dockerLabels": {},
+      "ulimits": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-create-group": "true",
+          "awslogs-group": "/ecs/gitgrade-carrot",
+          "awslogs-region": "us-west-2",
+          "awslogs-stream-prefix": "ecs"
+        },
+        "secretOptions": []
+      },
+      "systemControls": []
+    }
+  ],
+  "family": "gitgrade-carrot",
+  "executionRoleArn": "arn:aws:iam::746433511096:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "volumes": [],
+  "placementConstraints": [],
+  "runtimePlatform": {
+    "cpuArchitecture": "X86_64",
+    "operatingSystemFamily": "LINUX"
+  },
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "256",
+  "memory": "512",
+  "tags": [
+    {
+      "key": "app",
+      "value": "gitgrade"
+    },
+    {
+      "key": "ecs:taskDefinition:createdFrom",
+      "value": "ecs-console-v2"
+    },
+    {
+      "key": "ecs:taskDefinition:stackId",
+      "value": "arn:aws:cloudformation:us-west-2:746433511096:stack/ECS-Console-V2-TaskDefinition-d8a51cf8-a036-4d26-8770-ddfa407c40f7/608ba2c0-879a-11ec-a07e-0ae287c09527"
+    }
+  ]
+}

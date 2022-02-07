@@ -81,8 +81,8 @@ TODO
 - [x] Cache Data in DB
 - [x] Make UI Pretty + Add Boostrap
   - "Pretty" might require additional work, but basic starting place is there
-- [ ] Support for Accounts + Oauth Login to reduce rate limiting
-- [ ] Host it somewhere
+- [x] Support for Accounts + Oauth Login to reduce rate limiting
+- [x] Host it somewhere
 - [ ] Include sub-grades per metric
 - [ ] Support 'deal breaker' limits (like has no recent authors)
 - [ ] Tooltips for individual metrics
@@ -97,3 +97,42 @@ Additional Metrics
 - [ ] Avg time to resolve issues
 - [ ] Avg time to merge PRs
 - [ ] Size (files and lines of code) for primary language in repo
+
+----
+
+# Misc. Notes
+
+The production infrastructure has these parts:
+
+1. An Application Load Balancer listening for HTTPS on 443
+  - Security Group 'gitgrade-loadbalancer' that listens for 443 and forwards anywhere
+  - Targret group configured during setup of service (see below)
+3. ECS Task Definition
+  - This is configured by `./aws/gitgrade-carrot.json`
+  - Must be updated to reference new version of docker container when a new version is released
+  - Requires IAM role access to KMS and SSM for secrets
+  - This is basically the equivalent of docker-compose but for ECS
+2. ECS Fargate Cluster
+  - Cluster that runs the task definition
+  - Launches the service with some key properties:
+    - Sets up the Load Balancer described above with a new target group
+    - Uses its own security group that allows connections from the load balancer (referenced by the load balancer's security group) for connections over port 8000
+    - Runs a single instance (cheap), will auto-restart since it's a 'service' if something goes down
+3. Docker Image
+  - This is built locally and uses the command in the `Makefile` to push it up to AWS
+  - Currently runs a single-threaded uWSGI process, but relies on the ALB for HTTPS
+4. RDS Aurora Serverless Postgres 10.4
+  - Serverless because I don't think this will get used often, at least at first and will keep costs down
+  - Postgres because it integrates well with Django and makes local dev easier
+  - RDS has a security policy that allows connections from the Fargate Cluster's security group over port 5432
+  - Note that Aurora Serverless does not permit connections from outside the VPC regardless of security group
+    - For this reason, the Docker image includes running the migrations every time a new container starts
+    - This 'automigration' strategy implies that breaking DB changes should be backwards compatible for at least 1 revision to allow task pool draining
+
+
+
+
+
+
+
+

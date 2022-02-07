@@ -25,7 +25,7 @@ debug_str = os.environ.get("DJANGO_DEBUG", "True")
 DEBUG = debug_str.lower() == "true"
 print(f"{DEBUG=}")
 
-ALLOWED_HOSTS = ["127.0.0.1", "localhost", "gitgrade.net", ".gitgrade.net"]
+ALLOWED_HOSTS = ["*"]
 
 # Application definition
 

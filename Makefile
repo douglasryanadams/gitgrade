@@ -1,4 +1,4 @@
-.PHONY: init test lint security run run_dev migrate check version build build_docker push
+.PHONY: init test lint security run run_dev migrate check version build build_docker push_task push_image
 
 
 DJANGO_SETTINGS = \
@@ -47,9 +47,12 @@ build_docker:
 
 build: init check version build_docker
 
-push: init check
+push_image: init check
 	aws ecr get-login-password --region us-west-2 \
 		| docker login --username AWS --password-stdin 746433511096.dkr.ecr.us-west-2.amazonaws.com
 	docker build --tag 746433511096.dkr.ecr.us-west-2.amazonaws.com/gitgrade:$$(cat gitgrade/version.txt) .
 	docker push 746433511096.dkr.ecr.us-west-2.amazonaws.com/gitgrade:$$(cat gitgrade/version.txt)
+
+push_task:
+	aws ecs register-task-definition --cli-input-json file://aws/gitgrade-carrot.json
 

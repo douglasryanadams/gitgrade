@@ -31,4 +31,4 @@ RUN poetry config virtualenvs.create false \
     && chown -R gitgrade /code
 
 USER gitgrade
-CMD ["/code/docker-wait.sh", "uwsgi", "--http", ":8000", "--module", "gitgrade.wsgi"]
+CMD ["/code/docker-wait.sh", "uwsgi", "--master", "--http", ":8000", "--module", "gitgrade.wsgi"]
