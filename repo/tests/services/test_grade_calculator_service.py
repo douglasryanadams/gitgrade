@@ -42,7 +42,7 @@ def base_local_data():
 
 
 def test_perfect_grade(base_api_data, base_local_data):
-    assert calculate_grade(base_api_data, base_local_data) == Grade.A
+    assert calculate_grade(base_api_data, base_local_data).final_grade == Grade.A
 
 
 def test_grade_a(base_api_data, base_local_data):
@@ -50,9 +50,9 @@ def test_grade_a(base_api_data, base_local_data):
     base_api_data.days_since_create = 1200
     base_local_data.authors_total = 30
     base_local_data.authors_recent = 10
-    base_local_data.prolific_author_commits_total = int(52 * 3 * 10 * 0.80)
-    base_local_data.prolific_author_commits_recent = int(6 * 4 * 3 * 0.80)
-    assert calculate_grade(base_api_data, base_local_data) == Grade.A
+    base_local_data.prolific_author_commits_total = int(52 * 3 * 10 * 0.30)
+    base_local_data.prolific_author_commits_recent = int(6 * 4 * 3 * 0.50)
+    assert calculate_grade(base_api_data, base_local_data).final_grade == Grade.A
 
 
 def test_grade_b(base_api_data, base_local_data):
@@ -60,9 +60,9 @@ def test_grade_b(base_api_data, base_local_data):
     base_api_data.days_since_create = 800
     base_local_data.authors_total = 15
     base_local_data.authors_recent = 7
-    base_local_data.prolific_author_commits_total = int(52 * 3 * 10 * 0.75)
-    base_local_data.prolific_author_commits_recent = int(6 * 4 * 3 * 0.75)
-    assert calculate_grade(base_api_data, base_local_data) == Grade.B
+    base_local_data.prolific_author_commits_total = int(52 * 3 * 10 * 0.15)
+    base_local_data.prolific_author_commits_recent = int(6 * 4 * 3 * 0.30)
+    assert calculate_grade(base_api_data, base_local_data).final_grade == Grade.B
 
 
 def test_grade_c(base_api_data, base_local_data):
@@ -70,9 +70,9 @@ def test_grade_c(base_api_data, base_local_data):
     base_api_data.days_since_create = 400
     base_local_data.authors_total = 5
     base_local_data.authors_recent = 4
-    base_local_data.prolific_author_commits_total = int(52 * 3 * 10 * 0.55)
-    base_local_data.prolific_author_commits_recent = int(6 * 4 * 3 * 0.55)
-    assert calculate_grade(base_api_data, base_local_data) == Grade.C
+    base_local_data.prolific_author_commits_total = int(52 * 3 * 10 * 0.08)
+    base_local_data.prolific_author_commits_recent = int(6 * 4 * 3 * 0.15)
+    assert calculate_grade(base_api_data, base_local_data).final_grade == Grade.C
 
 
 def test_grade_d(base_api_data, base_local_data):
@@ -80,9 +80,9 @@ def test_grade_d(base_api_data, base_local_data):
     base_api_data.days_since_create = 200
     base_local_data.authors_total = 2
     base_local_data.authors_recent = 2
-    base_local_data.prolific_author_commits_total = int(52 * 3 * 10 * 0.45)
-    base_local_data.prolific_author_commits_recent = int(6 * 4 * 3 * 0.45)
-    assert calculate_grade(base_api_data, base_local_data) == Grade.D
+    base_local_data.prolific_author_commits_total = int(52 * 3 * 10 * 0.04)
+    base_local_data.prolific_author_commits_recent = int(6 * 4 * 3 * 0.08)
+    assert calculate_grade(base_api_data, base_local_data).final_grade == Grade.D
 
 
 def test_grade_f(base_api_data, base_local_data):
@@ -90,11 +90,6 @@ def test_grade_f(base_api_data, base_local_data):
     base_api_data.days_since_create = 100
     base_local_data.authors_total = 1
     base_local_data.authors_recent = 0
-    base_local_data.prolific_author_commits_total = int(52 * 3 * 10 * 0.25)
-    base_local_data.prolific_author_commits_recent = int(6 * 4 * 3 * 0.25)
-    assert calculate_grade(base_api_data, base_local_data) == Grade.F
-
-
-# pylint: disable=fixme
-# TODO: Add some checks based on real repos as a "gut check" that we're in the ball-park
-#       as we calibrate the grading system.
+    base_local_data.prolific_author_commits_total = int(52 * 3 * 10 * 0.02)
+    base_local_data.prolific_author_commits_recent = int(6 * 4 * 3 * 0.04)
+    assert calculate_grade(base_api_data, base_local_data).final_grade == Grade.F

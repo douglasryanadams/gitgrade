@@ -25,13 +25,13 @@
             <div class="col text-center">
                 <div class="
                     card display-1 text-light
-                    {% if final_grade == 'A' %}bg-success{% endif %}
-                    {% if final_grade == 'B' %}bg-success{% endif %}
-                    {% if final_grade == 'C' %}bg-warning{% endif %}
-                    {% if final_grade == 'D' %}bg-danger{% endif %}
-                    {% if final_grade == 'F' %}bg-danger{% endif %}
+                    {% if grades.final_grade.value == 'A' %}bg-success{% endif %}
+                    {% if grades.final_grade.value == 'B' %}bg-success{% endif %}
+                    {% if grades.final_grade.value == 'C' %}bg-warning{% endif %}
+                    {% if grades.final_grade.value == 'D' %}bg-danger{% endif %}
+                    {% if grades.final_grade.value == 'F' %}bg-danger{% endif %}
                 ">
-                    {{ final_grade }}
+                    {{ grades.final_grade.value }}
                 </div>
             </div>
             <div class="col-5">&nbsp;</div>
@@ -50,36 +50,49 @@
                     <tr>
                         <th scope="col">Property</th>
                         <th scope="col">Value</th>
+                        <th scope="col">Grade</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr>
                         <td>Authors</td>
                         <td>{{ authors_total }}</td>
+                        <td class="text-center">{{ grades.total_authors.value }}</td>
                     </tr>
                     <tr>
                         <td>Commits</td>
                         <td>{{ commits_total }}</td>
+                        <td class="text-center"> - </td>
                     </tr>
                     <tr>
                         <td>Prolific Author Commits</td>
                         <td>{{ prolific_author_commits_total }}</td>
+                        <td class="text-center">{{ grades.total_prolific_authors.value }}</td>
                     </tr>
                     <tr>
                         <td>Days Since Commit</td>
                         <td>{{ days_since_commit }}</td>
+                        <td class="text-center">{{ grades.days_since_commit.value }}</td>
                     </tr>
                     <tr>
                         <td>Recent Authors</td>
                         <td>{{ authors_recent }}</td>
+                        <td class="text-center">{{ grades.recent_authors.value }}</td>
                     </tr>
                     <tr>
                         <td>Recent Commits</td>
                         <td>{{ commits_recent }}</td>
+                        <td class="text-center"> - </td>
                     </tr>
                     <tr>
                         <td>Recent Prolific Author Commits</td>
                         <td>{{ prolific_author_commits_recent }}</td>
+                        <td class="text-center">{{ grades.recent_prolific_authors.value }}</td>
+                    </tr>
+                    <tr>
+                        <td>Days Since Create</td>
+                        <td>{{ days_since_create }}</td>
+                        <td class="text-center">{{ grades.repo_age.value }}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -125,10 +138,6 @@
                     <tr>
                         <td>Open Issues</td>
                         <td>{{ open_issues }}</td>
-                    </tr>
-                    <tr>
-                        <td>Days since Create</td>
-                        <td>{{ days_since_create }}</td>
                     </tr>
                     </tbody>
                 </table>

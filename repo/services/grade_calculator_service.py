@@ -2,7 +2,7 @@
 
 import logging
 
-from repo.services.data import ApiData, LocalData, Grade
+from repo.services.data import ApiData, LocalData, Grade, TestGrades
 
 logger = logging.getLogger(__name__)
 
@@ -16,7 +16,7 @@ class DaysSinceCommit:
         - RepoAge
     """
 
-    max_score = 100
+    max_score = 200
 
     @classmethod
     def get_score(cls, days_since_commit: int) -> float:
@@ -102,7 +102,7 @@ class RecentAuthors:
         - Total Authors
     """
 
-    max_score = 100
+    max_score = 150
 
     @classmethod
     def get_score(cls, authors_recent: int) -> float:
@@ -131,6 +131,7 @@ class TotalProlificAuthors:
     @classmethod
     def get_score(cls, total_commits: int, prolific_author_commits: int) -> float:
         if total_commits == 0:
+            # If somehow there have been no commits, return a neutral "C"
             return cls.max_score * 0.75
 
         logger.debug(
@@ -140,18 +141,18 @@ class TotalProlificAuthors:
             prolific_author_commits / total_commits,
         )
 
-        if prolific_author_commits / total_commits > 0.9:
+        if prolific_author_commits / total_commits > 0.25:
             return cls.max_score
-        if prolific_author_commits / total_commits > 0.7:
+        if prolific_author_commits / total_commits > 0.10:
             return cls.max_score * 0.9
-        if prolific_author_commits / total_commits > 0.6:
+        if prolific_author_commits / total_commits > 0.05:
             return cls.max_score * 0.8
-        if prolific_author_commits / total_commits > 0.5:
+        if prolific_author_commits / total_commits > 0.025:
             return cls.max_score * 0.7
-        if prolific_author_commits / total_commits > 0.4:
+        if prolific_author_commits / total_commits > 0.01:
             return cls.max_score * 0.6
 
-        return 0
+        return cls.max_score * 0.5
 
 
 class RecentProlificAuthors:
@@ -177,21 +178,34 @@ class RecentProlificAuthors:
             prolific_author_commits / total_commits,
         )
 
-        if prolific_author_commits / total_commits > 0.9:
+        if prolific_author_commits / total_commits > 0.40:
             return cls.max_score
-        if prolific_author_commits / total_commits > 0.7:
+        if prolific_author_commits / total_commits > 0.25:
             return cls.max_score * 0.9
-        if prolific_author_commits / total_commits > 0.6:
+        if prolific_author_commits / total_commits > 0.10:
             return cls.max_score * 0.8
-        if prolific_author_commits / total_commits > 0.5:
+        if prolific_author_commits / total_commits > 0.05:
             return cls.max_score * 0.7
-        if prolific_author_commits / total_commits > 0.4:
+        if prolific_author_commits / total_commits > 0.025:
             return cls.max_score * 0.6
 
-        return cls.max_score * 0.5
+        return cls.max_score * 0.25
 
 
-def calculate_grade(api_data: ApiData, local_data: LocalData) -> Grade:
+def _get_letter_grade(score: float, total_max_score: float) -> Grade:
+    score = score / total_max_score
+    if score > 0.9:
+        return Grade.A
+    if score > 0.8:
+        return Grade.B
+    if score > 0.7:
+        return Grade.C
+    if score > 0.6:
+        return Grade.D
+    return Grade.F
+
+
+def calculate_grade(api_data: ApiData, local_data: LocalData) -> TestGrades:
     """
     This method calculates a grade for the repo using a similar system to
     American public schools (for better or worse). Each metric is a "test"
@@ -202,41 +216,51 @@ def calculate_grade(api_data: ApiData, local_data: LocalData) -> Grade:
     logger.debug("  api_data: %s", api_data)
     logger.debug("  local_data: %s", local_data)
 
+    days_since_commit = DaysSinceCommit.get_score(local_data.days_since_commit)
+    repo_age = RepoAge.get_score(api_data.days_since_create)
+    total_authors = TotalAuthors.get_score(local_data.authors_total)
+    recent_authors = RecentAuthors.get_score(local_data.authors_recent)
+    total_prolific_authors = TotalProlificAuthors.get_score(
+        local_data.commits_total, local_data.prolific_author_commits_total
+    )
+    recent_prolific_authors = RecentProlificAuthors.get_score(
+        local_data.commits_recent, local_data.prolific_author_commits_recent
+    )
+
     total_max_score = sum(
-        (
+        [
             DaysSinceCommit.max_score,
             RepoAge.max_score,
             TotalAuthors.max_score,
             RecentAuthors.max_score,
             TotalProlificAuthors.max_score,
             RecentProlificAuthors.max_score,
-        )
+        ]
     )
 
     repo_final_score = sum(
-        (
-            DaysSinceCommit.get_score(local_data.days_since_commit),
-            RepoAge.get_score(api_data.days_since_create),
-            TotalAuthors.get_score(local_data.authors_total),
-            RecentAuthors.get_score(local_data.authors_recent),
-            TotalProlificAuthors.get_score(
-                local_data.commits_total, local_data.prolific_author_commits_total
-            ),
-            RecentProlificAuthors.get_score(
-                local_data.commits_recent, local_data.prolific_author_commits_recent
-            ),
-        )
+        [
+            days_since_commit,
+            repo_age,
+            total_authors,
+            recent_authors,
+            total_prolific_authors,
+            recent_prolific_authors,
+        ]
     )
 
-    score = repo_final_score / total_max_score
-
-    if score > 0.9:
-        return Grade.A
-    if score > 0.8:
-        return Grade.B
-    if score > 0.7:
-        return Grade.C
-    if score > 0.6:
-        return Grade.D
-
-    return Grade.F
+    return TestGrades(
+        days_since_commit=_get_letter_grade(
+            days_since_commit, DaysSinceCommit.max_score
+        ),
+        repo_age=_get_letter_grade(repo_age, RepoAge.max_score),
+        total_authors=_get_letter_grade(total_authors, TotalAuthors.max_score),
+        recent_authors=_get_letter_grade(recent_authors, RecentAuthors.max_score),
+        total_prolific_authors=_get_letter_grade(
+            total_prolific_authors, TotalProlificAuthors.max_score
+        ),
+        recent_prolific_authors=_get_letter_grade(
+            recent_prolific_authors, RecentProlificAuthors.max_score
+        ),
+        final_grade=_get_letter_grade(repo_final_score, total_max_score),
+    )

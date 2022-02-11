@@ -32,7 +32,7 @@ def _setup_repo(directory_path: str, url_data: RepoRequestData) -> Repo:
         repo.remotes["origin"].pull()
     else:
         repo_url = f"{source_to_base_url[url_data.source]}/{url_data.owner}/{url_data.repo}.git"
-        logger.debug("  cloing repo from: %s", repo_url)
+        logger.debug("  cloning repo from: %s", repo_url)
         logger.debug("  cloning repo to: %s", directory_path)
 
         repo = Repo.clone_from(
@@ -59,7 +59,8 @@ def _get_authors_commits(repo: Repo, recent: Optional[bool] = False) -> AuthorCo
 
     def _get_count_from_line(this_line: str) -> int:
         this_line = this_line.strip()
-        count_str, _ = re.split(r"\s+", this_line, 1)
+        parts = re.split(r"\s+", this_line, 1)
+        count_str = parts[0]
         return int(count_str)
 
     recent_date = datetime.today() - timedelta(days=183)  # About half a year
@@ -83,7 +84,9 @@ def _get_authors_commits(repo: Repo, recent: Optional[bool] = False) -> AuthorCo
     logger.debug("  authors_count (recent=%s) : %s", recent, authors_count)
     logger.debug("  commit_count (recent=%s) : %s", recent, commit_count)
 
-    prolific_author_commits = _get_count_from_line(author_data_list[0])
+    prolific_author_commits = (
+        _get_count_from_line(author_data_list[0]) if author_data_list else 0
+    )
 
     return AuthorCommits(
         authors_count=authors_count,

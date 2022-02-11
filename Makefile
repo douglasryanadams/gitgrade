@@ -9,8 +9,10 @@ init:
 	poetry install
 
 test:
-	$(DJANGO_SETTINGS) poetry run pytest
+	$(DJANGO_SETTINGS) poetry run pytest -m 'not integration_test'
 
+test_integration:
+	$(DJANGO_SETTINGS) poetry run pytest -m 'integration_test'
 
 lint:
 	poetry run black ./gitgrade ./repo
