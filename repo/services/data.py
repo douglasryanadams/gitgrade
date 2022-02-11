@@ -42,3 +42,14 @@ class Grade(Enum):
     C = "C"
     D = "D"
     F = "F"
+
+
+@dataclass
+class TestGrades:
+    days_since_commit: Grade
+    repo_age: Grade
+    total_authors: Grade
+    recent_authors: Grade
+    total_prolific_authors: Grade
+    recent_prolific_authors: Grade
+    final_grade: Grade

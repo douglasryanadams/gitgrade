@@ -80,11 +80,12 @@ TODO
 
 - [x] Cache Data in DB
 - [x] Make UI Pretty + Add Boostrap
-  - "Pretty" might require additional work, but basic starting place is there
+    - "Pretty" might require additional work, but basic starting place is there
 - [x] Support for Accounts + Oauth Login to reduce rate limiting
 - [x] Host it somewhere
-- [ ] Include sub-grades per metric
-- [ ] Support 'deal breaker' limits (like has no recent authors)
+- [x] Include sub-grades per metric
+- [x] Support 'deal-breaker' limits (like has no recent authors)
+    - Implemented with weighting
 - [ ] Tooltips for individual metrics
 - [ ] Write out description of how calculation works and include on site
 - [ ] Show recent search results on front page
@@ -98,7 +99,19 @@ Additional Metrics
 - [ ] Avg time to merge PRs
 - [ ] Size (files and lines of code) for primary language in repo
 
+Bugs
+
+- [ ] Any invalid URL results in a 500
+
 ----
+
+# On Release
+
+Update:
+
+- pyproject.toml
+- gitgrade/templates/gitgrade/base.html
+- aws/gitgrade-carrot.json
 
 # Misc. Notes
 
