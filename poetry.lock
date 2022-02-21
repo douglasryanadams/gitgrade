@@ -177,6 +177,17 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-appconf"
+version = "1.0.5"
+description = "A helper class for handling configuration defaults of packaged apps gracefully."
+category = "main"
+optional = false
+python-versions = ">=3.6"
+
+[package.dependencies]
+django = "*"
+
+[[package]]
 name = "django-bootstrap-v5"
 version = "1.0.8"
 description = "Bootstrap 5 support for Django projects"
@@ -190,6 +201,18 @@ django = ">=2.2,<5.0"
 
 [package.extras]
 docs = ["sphinx (>=2.4,<3.0)", "sphinx_rtd_theme (>=0.4.3,<0.5.0)", "m2r2 (>=0.2.5,<0.3.0)"]
+
+[[package]]
+name = "django-cookie-consent"
+version = "0.3.1"
+description = "Django cookie consent application"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+Django = ">=2.2"
+django-appconf = "*"
 
 [[package]]
 name = "django-stubs"
@@ -766,7 +789,7 @@ pyyaml = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.10"
-content-hash = "9841364e131fe7b12dfb09aa8c9365e7198e36cef0dfb9970f8054b254b6d94e"
+content-hash = "2db753533745c081be1c1bf5e862f87fd21e6b9aca586ae955a2d49452f1bb64"
 
 [metadata.files]
 asgiref = [
@@ -873,9 +896,16 @@ django = [
     {file = "Django-4.0.1-py3-none-any.whl", hash = "sha256:7cd8e8a3ed2bc0dfda05ce1e53a9c81b30eefd7aa350e538a18884475e4d4ce2"},
     {file = "Django-4.0.1.tar.gz", hash = "sha256:2485eea3cc4c3bae13080dee866ebf90ba9f98d1afe8fda89bfb0eb2e218ef86"},
 ]
+django-appconf = [
+    {file = "django-appconf-1.0.5.tar.gz", hash = "sha256:be3db0be6c81fa84742000b89a81c016d70ae66a7ccb620cdef592b1f1a6aaa4"},
+    {file = "django_appconf-1.0.5-py3-none-any.whl", hash = "sha256:ae9f864ee1958c815a965ed63b3fba4874eec13de10236ba063a788f9a17389d"},
+]
 django-bootstrap-v5 = [
     {file = "django-bootstrap-v5-1.0.8.tar.gz", hash = "sha256:c366d761b5ce2124448c81d12f1a22c0519a664def46d28efd016f83b7683ea9"},
     {file = "django_bootstrap_v5-1.0.8-py3-none-any.whl", hash = "sha256:220d905c2d64d25bdb1b53a20c5b1ba36c566e322fc310a11f66ac0e9cf466bc"},
+]
+django-cookie-consent = [
+    {file = "django-cookie-consent-0.3.1.tar.gz", hash = "sha256:71701c23e82f8ad64cc899ae3595d9595d0e6faaac47c27a614e1178cd95e3e0"},
 ]
 django-stubs = [
     {file = "django-stubs-1.9.0.tar.gz", hash = "sha256:664843091636a917faf5256d028476559dc360fdef9050b6df87ab61b21607bf"},

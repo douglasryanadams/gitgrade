@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gitgrade"
-version = "0.2.0"
+version = "0.2.1"
 description = "Evaluates quality of git repos and provides a grade"
 authors = ["Douglas Adams <douglasryanadams@gmail.com>"]
 license = "MIT"
@@ -15,6 +15,7 @@ GitPython = "^3.1.26"
 django-bootstrap-v5 = "^1.0.8"
 uWSGI = "^2.0.20"
 psycopg2 = "^2.9.3"
+django-cookie-consent = "^0.3.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^6.2.5"
