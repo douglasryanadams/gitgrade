@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timedelta
 from typing import Tuple
 
+from packaging.version import parse as parse_version
 from django.core.exceptions import ObjectDoesNotExist
 
 from repo.models import GitRepoData
@@ -13,7 +14,9 @@ logger = logging.getLogger(__name__)
 RECENT_DAYS = 30
 
 
-def check_cache(url_metadata: RepoRequestData) -> Tuple[ApiData, LocalData]:
+def check_cache(
+    current_version: str, url_metadata: RepoRequestData
+) -> Tuple[ApiData, LocalData]:
     logger.debug("Checking cache for existing data: %s", url_metadata)
 
     try:
@@ -28,6 +31,11 @@ def check_cache(url_metadata: RepoRequestData) -> Tuple[ApiData, LocalData]:
     logger.debug("type for found.row_updated_date: %s", type(found.row_updated_date))
     logger.debug("type for recent: %s", type(recent))
     if found.row_updated_date < recent.date():
+        raise CacheMiss()
+
+    current_version_parsed = parse_version(current_version)
+    found_version_parsed = parse_version(found.version)
+    if current_version_parsed > found_version_parsed:
         raise CacheMiss()
 
     api_data = ApiData(
@@ -51,13 +59,20 @@ def check_cache(url_metadata: RepoRequestData) -> Tuple[ApiData, LocalData]:
         prolific_author_commits_recent=found.prolific_author_commits_recent,
         lines_of_code_total=found.lines_of_code_total,
         files_total=found.files_total,
+        commit_interval_all_mean=found.commit_interval_all_mean,
+        commit_interval_all_stdev=found.commit_interval_all_stdev,
+        commit_interval_recent_mean=found.commit_interval_recent_mean,
+        commit_interval_recent_stdev=found.commit_interval_recent_stdev,
     )
 
     return api_data, local_data
 
 
 def patch_cache(
-    url_metadata: RepoRequestData, api_data: ApiData, local_data: LocalData
+    version: str,
+    url_metadata: RepoRequestData,
+    api_data: ApiData,
+    local_data: LocalData,
 ) -> None:
     logger.debug("Updating cached data for: %s", url_metadata)
     logger.debug("  api_data: %s", api_data)
@@ -66,6 +81,7 @@ def patch_cache(
         found: GitRepoData = GitRepoData.objects.get_by_natural_key(
             source=url_metadata.source, owner=url_metadata.owner, repo=url_metadata.repo
         )
+        found.version = version
 
         found.days_since_update = api_data.days_since_update
         found.days_since_create = api_data.days_since_create
@@ -85,9 +101,17 @@ def patch_cache(
         found.lines_of_code_total = local_data.lines_of_code_total
         found.files_total = local_data.files_total
 
+        found.commit_interval_all_mean = local_data.commit_interval_all_mean
+        found.commit_interval_all_stdev = local_data.commit_interval_all_stdev
+        found.commit_interval_recent_mean = local_data.commit_interval_recent_mean
+        found.commit_interval_recent_stdev = local_data.commit_interval_recent_stdev
+
         found.save()
     except ObjectDoesNotExist:
         git_repo_data = GitRepoData.objects.create_git_repo_data(
-            url_metadata=url_metadata, api_data=api_data, local_data=local_data
+            version=version,
+            url_metadata=url_metadata,
+            api_data=api_data,
+            local_data=local_data,
         )
         git_repo_data.save()

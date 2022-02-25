@@ -6,11 +6,12 @@ import shutil
 import subprocess
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Optional
+from statistics import stdev, median, fmean
+from typing import Optional, List, Final
 
 from git import Repo, Commit  # type: ignore
 
-from repo.services.data import RepoRequestData, LocalData
+from repo.services.data import RepoRequestData, LocalData, Statistics
 from repo.services.errors import ClocMissingError
 
 logger = logging.getLogger(__name__)
@@ -19,6 +20,8 @@ source_to_base_url = {
     "bitbucket": "https://bitbucket.org",
     "github": "https://github.com",
 }
+
+RECENT_DAYS: Final = 183  # About half a year
 
 
 def _setup_repo(directory_path: str, url_data: RepoRequestData) -> Repo:
@@ -63,7 +66,7 @@ def _get_authors_commits(repo: Repo, recent: Optional[bool] = False) -> AuthorCo
         count_str = parts[0]
         return int(count_str)
 
-    recent_date = datetime.today() - timedelta(days=183)  # About half a year
+    recent_date = datetime.today() - timedelta(days=RECENT_DAYS)
     recent_date_str = recent_date.strftime("%Y-%m-%d")
 
     if recent:
@@ -104,6 +107,41 @@ def _get_days_since_last_commit(repo: Repo) -> int:
     return since_last_commit.days
 
 
+def _get_commit_interval_stats(
+    repo: Repo, recent: Optional[bool] = False
+) -> Statistics:
+    """
+    Returns statistics on the interval between commits
+    """
+    recent_date = datetime.today() - timedelta(days=RECENT_DAYS)
+    recent_seconds = (recent_date - datetime(1970, 1, 1)).total_seconds()
+
+    deltas: List[int] = []
+    previous_date = -1
+    commit_iterator = repo.iter_commits()
+    for commit in commit_iterator:
+        if recent and commit.committed_date < recent_seconds:
+            break
+
+        if previous_date == -1:
+            previous_date = commit.committed_date
+            continue
+
+        # We're going backwards from most recent -> first commit
+        deltas.append(previous_date - commit.committed_date)
+        previous_date = commit.committed_date
+
+    if deltas:
+        stats = Statistics(
+            mean=fmean(deltas), median=median(deltas), standard_deviation=stdev(deltas)
+        )
+    else:
+        stats = Statistics(mean=-1, median=-1, standard_deviation=-1)
+
+    logger.debug("  stats: %s", stats)
+    return stats
+
+
 def fetch_local_data(url_data: RepoRequestData) -> LocalData:
     """
     Calculates data about the git repo based on the local git files
@@ -138,6 +176,9 @@ def fetch_local_data(url_data: RepoRequestData) -> LocalData:
         logger.debug("  cloc_output: %s", cloc_stdout)
         cloc_json = json.loads(cloc_stdout)
 
+        stats_all = _get_commit_interval_stats(repo)
+        stats_recent = _get_commit_interval_stats(repo, recent=True)
+
         return LocalData(
             days_since_commit=days_since_commit,
             commits_total=total_author_commits.commit_count,
@@ -149,6 +190,10 @@ def fetch_local_data(url_data: RepoRequestData) -> LocalData:
             prolific_author_commits_recent=recent_author_commits.prolific_author_commits,
             lines_of_code_total=cloc_json.get("SUM", {}).get("code", -1),
             files_total=cloc_json.get("SUM", {}).get("nFiles", -1),
+            commit_interval_all_mean=stats_all.mean,
+            commit_interval_all_stdev=stats_all.standard_deviation,
+            commit_interval_recent_mean=stats_recent.mean,
+            commit_interval_recent_stdev=stats_recent.standard_deviation,
         )
     finally:
         shutil.rmtree(directory_path)

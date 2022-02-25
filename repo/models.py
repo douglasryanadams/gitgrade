@@ -8,6 +8,7 @@ from django.db.models import (
     BooleanField,
     Manager,
     UniqueConstraint,
+    FloatField,
 )
 
 from repo.services.data import RepoRequestData, ApiData, LocalData
@@ -18,12 +19,17 @@ class GitRepoDataManager(Manager):
         return self.get(source=source, owner=owner, repo=repo)
 
     def create_git_repo_data(
-        self, url_metadata: RepoRequestData, api_data: ApiData, local_data: LocalData
+        self,
+        version: str,
+        url_metadata: RepoRequestData,
+        api_data: ApiData,
+        local_data: LocalData,
     ):
         git_repo_data = self.create(
             source=url_metadata.source,
             owner=url_metadata.owner,
             repo=url_metadata.repo,
+            version=version,
             days_since_update=api_data.days_since_update,
             days_since_create=api_data.days_since_create,
             watchers=api_data.watchers,
@@ -41,6 +47,10 @@ class GitRepoDataManager(Manager):
             prolific_author_commits_recent=local_data.prolific_author_commits_recent,
             lines_of_code_total=local_data.lines_of_code_total,
             files_total=local_data.files_total,
+            commit_interval_all_mean=local_data.commit_interval_all_mean,
+            commit_interval_all_stdev=local_data.commit_interval_all_stdev,
+            commit_interval_recent_mean=local_data.commit_interval_recent_mean,
+            commit_interval_recent_stdev=local_data.commit_interval_recent_stdev,
         )
 
         return git_repo_data
@@ -49,6 +59,8 @@ class GitRepoDataManager(Manager):
 class GitRepoData(Model):
     row_created_date = DateField(auto_now_add=True)
     row_updated_date = DateField(auto_now=True)
+
+    version = CharField(max_length=32)
 
     # UrlMetadata
     source = CharField(max_length=255)
@@ -75,6 +87,10 @@ class GitRepoData(Model):
     prolific_author_commits_recent = IntegerField()
     lines_of_code_total = IntegerField()
     files_total = IntegerField()
+    commit_interval_all_mean = FloatField()
+    commit_interval_all_stdev = FloatField()
+    commit_interval_recent_mean = FloatField()
+    commit_interval_recent_stdev = FloatField()
 
     objects = GitRepoDataManager()
 

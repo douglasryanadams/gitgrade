@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gitgrade"
-version = "0.2.1"
+version = "0.3.0"
 description = "Evaluates quality of git repos and provides a grade"
 authors = ["Douglas Adams <douglasryanadams@gmail.com>"]
 license = "MIT"
@@ -8,28 +8,27 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.10"
 Django = "^4.0.1"
-pytest = "^6.2.5"
 requests = "^2.27.1"
 PyGithub = "^1.55"
 GitPython = "^3.1.26"
-django-bootstrap-v5 = "^1.0.8"
+django-bootstrap-v5 = "^1.0.11"
 uWSGI = "^2.0.20"
 psycopg2 = "^2.9.3"
-django-cookie-consent = "^0.3.1"
+packaging = "^21.3"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2.5"
+pytest = "^7.0.1"
 pylint = "^2.12.2"
 mypy = "^0.931"
-black = "^21.12b0"
+black = "^22.1.0"
 django-stubs = "^1.9.0"
 safety = "^1.10.3"
 freezegun = "^1.1.0"
-types-requests = "^2.27.7"
+types-requests = "^2.27.10"
 types-freezegun = "^1.1.6"
-liccheck = "^0.6.4"
+liccheck = "^0.6.5"
 pytest-django = "^4.5.2"
-pylint-django = "^2.5.0"
+pylint-django = "^2.5.2"
 yamllint = "^1.26.3"
 
 [build-system]

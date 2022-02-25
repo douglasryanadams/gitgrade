@@ -2,7 +2,7 @@
 
 import logging
 
-from repo.services.data import ApiData, LocalData, Grade, TestGrades
+from repo.services.data import ApiData, LocalData, Grade, TestGrades, TestGrade
 
 logger = logging.getLogger(__name__)
 
@@ -42,9 +42,10 @@ class RepoAge:
 
     Tensions:
         - DaysSinceCommit
+        - CommitInterval
     """
 
-    max_score = 100
+    max_score = 50
 
     @classmethod
     def get_score(cls, days_since_create: int) -> float:
@@ -192,6 +193,33 @@ class RecentProlificAuthors:
         return cls.max_score * 0.25
 
 
+class CommitInterval:
+    """
+    Scores repo based on 1 std deviation above the mean of time beween commits
+
+    Tensions:
+        - RepoAge
+    """
+
+    max_score = 100
+
+    @classmethod
+    def get_score(cls, mean: float, stdev: float) -> float:
+        majority = mean + stdev
+
+        if majority < (60 * 60 * 24 * 7):
+            return cls.max_score
+        if majority < (60 * 60 * 24 * 14):
+            return cls.max_score * 0.9
+        if majority < (60 * 60 * 24 * 28):
+            return cls.max_score * 0.8
+        if majority < (60 * 60 * 24 * 60):
+            return cls.max_score * 0.7
+        if majority < (60 * 60 * 24 * 90):
+            return cls.max_score * 0.6
+        return cls.max_score * 0.5
+
+
 def _get_letter_grade(score: float, total_max_score: float) -> Grade:
     score = score / total_max_score
     if score > 0.9:
@@ -226,6 +254,12 @@ def calculate_grade(api_data: ApiData, local_data: LocalData) -> TestGrades:
     recent_prolific_authors = RecentProlificAuthors.get_score(
         local_data.commits_recent, local_data.prolific_author_commits_recent
     )
+    all_commit_interval = CommitInterval.get_score(
+        local_data.commit_interval_all_mean, local_data.commit_interval_all_stdev
+    )
+    recent_commit_interval = CommitInterval.get_score(
+        local_data.commit_interval_recent_mean, local_data.commit_interval_recent_stdev
+    )
 
     total_max_score = sum(
         [
@@ -235,6 +269,7 @@ def calculate_grade(api_data: ApiData, local_data: LocalData) -> TestGrades:
             RecentAuthors.max_score,
             TotalProlificAuthors.max_score,
             RecentProlificAuthors.max_score,
+            CommitInterval.max_score * 2,  # Account for both recent and total
         ]
     )
 
@@ -246,21 +281,55 @@ def calculate_grade(api_data: ApiData, local_data: LocalData) -> TestGrades:
             recent_authors,
             total_prolific_authors,
             recent_prolific_authors,
+            all_commit_interval,
+            recent_commit_interval,
         ]
     )
 
     return TestGrades(
-        days_since_commit=_get_letter_grade(
-            days_since_commit, DaysSinceCommit.max_score
+        days_since_commit=TestGrade(
+            letter_grade=_get_letter_grade(
+                days_since_commit, DaysSinceCommit.max_score
+            ),
+            weight=round(DaysSinceCommit.max_score / 100, 1),
         ),
-        repo_age=_get_letter_grade(repo_age, RepoAge.max_score),
-        total_authors=_get_letter_grade(total_authors, TotalAuthors.max_score),
-        recent_authors=_get_letter_grade(recent_authors, RecentAuthors.max_score),
-        total_prolific_authors=_get_letter_grade(
-            total_prolific_authors, TotalProlificAuthors.max_score
+        repo_age=TestGrade(
+            letter_grade=_get_letter_grade(repo_age, RepoAge.max_score),
+            weight=round(RepoAge.max_score / 100, 1),
         ),
-        recent_prolific_authors=_get_letter_grade(
-            recent_prolific_authors, RecentProlificAuthors.max_score
+        total_authors=TestGrade(
+            letter_grade=_get_letter_grade(total_authors, TotalAuthors.max_score),
+            weight=round(TotalAuthors.max_score / 100, 1),
         ),
-        final_grade=_get_letter_grade(repo_final_score, total_max_score),
+        recent_authors=TestGrade(
+            letter_grade=_get_letter_grade(recent_authors, RecentAuthors.max_score),
+            weight=round(RecentAuthors.max_score / 100, 1),
+        ),
+        total_prolific_authors=TestGrade(
+            letter_grade=_get_letter_grade(
+                total_prolific_authors, TotalProlificAuthors.max_score
+            ),
+            weight=round(TotalProlificAuthors.max_score / 100, 1),
+        ),
+        recent_prolific_authors=TestGrade(
+            letter_grade=_get_letter_grade(
+                recent_prolific_authors, RecentProlificAuthors.max_score
+            ),
+            weight=round(RecentProlificAuthors.max_score / 100, 1),
+        ),
+        all_commit_interval=TestGrade(
+            letter_grade=_get_letter_grade(
+                all_commit_interval, CommitInterval.max_score
+            ),
+            weight=round(CommitInterval.max_score / 100, 1),
+        ),
+        recent_commit_interval=TestGrade(
+            letter_grade=_get_letter_grade(
+                recent_commit_interval, CommitInterval.max_score
+            ),
+            weight=round(CommitInterval.max_score / 100, 1),
+        ),
+        final_grade=TestGrade(
+            letter_grade=_get_letter_grade(repo_final_score, total_max_score), weight=1
+        ),
     )

@@ -5,8 +5,7 @@
 
 <nav class="navbar navbar-expand-lg navbar-light bg-light px-5">
     <div class="container-fluid">
-        {#    TODO: Get version number programmatically #}
-        <a class="navbar-brand" href="/">Git Grade (alpha: 0.2.1)</a>
+        <a class="navbar-brand" href="/">Git Grade (alpha: {{ GITGRADE_VERSION }})</a>
         <div class="justify-content-end">
             {% if GITHUB_TOKEN %}
                 <button disabled class="btn btn-success">

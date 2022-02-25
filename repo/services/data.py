@@ -34,6 +34,17 @@ class LocalData:
     prolific_author_commits_recent: int
     lines_of_code_total: int
     files_total: int
+    commit_interval_all_mean: float
+    commit_interval_all_stdev: float
+    commit_interval_recent_mean: float
+    commit_interval_recent_stdev: float
+
+
+@dataclass
+class Statistics:
+    mean: float
+    median: float
+    standard_deviation: float
 
 
 class Grade(Enum):
@@ -45,11 +56,19 @@ class Grade(Enum):
 
 
 @dataclass
+class TestGrade:
+    letter_grade: Grade
+    weight: float
+
+
+@dataclass
 class TestGrades:
-    days_since_commit: Grade
-    repo_age: Grade
-    total_authors: Grade
-    recent_authors: Grade
-    total_prolific_authors: Grade
-    recent_prolific_authors: Grade
-    final_grade: Grade
+    days_since_commit: TestGrade
+    repo_age: TestGrade
+    total_authors: TestGrade
+    recent_authors: TestGrade
+    total_prolific_authors: TestGrade
+    recent_prolific_authors: TestGrade
+    all_commit_interval: TestGrade
+    recent_commit_interval: TestGrade
+    final_grade: TestGrade

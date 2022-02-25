@@ -39,29 +39,45 @@ def fake_local_data():
         prolific_author_commits_recent=-1,
         lines_of_code_total=-1,
         files_total=-1,
+        commit_interval_all_mean=-1,
+        commit_interval_all_stdev=-1,
+        commit_interval_recent_mean=-1,
+        commit_interval_recent_stdev=-1,
     )
 
 
 @pytest.mark.django_db
 def test_cache(fake_url_metadata, fake_api_data, fake_local_data):
     with pytest.raises(CacheMiss):
-        check_cache(fake_url_metadata)
+        check_cache("0.0.0", fake_url_metadata)
 
-    patch_cache(fake_url_metadata, fake_api_data, fake_local_data)
-    found = check_cache(fake_url_metadata)
+    patch_cache("0.0.0", fake_url_metadata, fake_api_data, fake_local_data)
+    found = check_cache("0.0.0", fake_url_metadata)
     assert found
 
 
 @pytest.mark.django_db
 def test_cache_expired_update(fake_url_metadata, fake_api_data, fake_local_data):
-    patch_cache(fake_url_metadata, fake_api_data, fake_local_data)
+    patch_cache("0.0.0", fake_url_metadata, fake_api_data, fake_local_data)
 
     with freeze_time("2100-01-01"):  # Date in the far future, I would have been 114
         with pytest.raises(CacheMiss):
-            check_cache(fake_url_metadata)
+            check_cache("0.0.0", fake_url_metadata)
 
     fake_api_data.days_since_create = 10
-    patch_cache(fake_url_metadata, fake_api_data, fake_local_data)
-    found = check_cache(fake_url_metadata)
+    patch_cache("0.0.0", fake_url_metadata, fake_api_data, fake_local_data)
+    found = check_cache("0.0.0", fake_url_metadata)
     assert found
     assert found[0].days_since_create == 10
+
+
+@pytest.mark.django_db
+def test_cache_old_version_update(fake_url_metadata, fake_api_data, fake_local_data):
+    patch_cache("0.0.0", fake_url_metadata, fake_api_data, fake_local_data)
+
+    with pytest.raises(CacheMiss):
+        check_cache("0.0.1", fake_url_metadata)
+
+    patch_cache("0.0.1", fake_url_metadata, fake_api_data, fake_local_data)
+    found = check_cache("0.0.1", fake_url_metadata)
+    assert found

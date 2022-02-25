@@ -3,35 +3,17 @@
 {% block content %}
     <div class="container">
         <div class="row">
-            <div class="col-2">&nbsp;</div>
-            <div class="col mb-3">
-                <div class="card bg-secondary bg-gradient text-white p-4">
-                    <h3>Disclaimer</h3>
-                    <p>
-                        The information on this page is a recommendation presented based on my specific opinions about
-                        what is valuable in an open source git project.
-                    </p>
-                    <p>
-                        As of Jan 30, 2022 - This site is also in a very early state and undergoing continuous iteration on how
-                        it evaluates the quality of a git repository. As such, the ratings provided here are highly subject to
-                        change.
-                    </p>
-                </div>
-            </div>
-            <div class="col-2">&nbsp;</div>
-        </div>
-        <div class="row">
             <div class="col-5">&nbsp;</div>
             <div class="col text-center">
                 <div class="
                     card display-1 text-light
-                    {% if grades.final_grade.value == 'A' %}bg-success{% endif %}
-                    {% if grades.final_grade.value == 'B' %}bg-success{% endif %}
-                    {% if grades.final_grade.value == 'C' %}bg-warning{% endif %}
-                    {% if grades.final_grade.value == 'D' %}bg-danger{% endif %}
-                    {% if grades.final_grade.value == 'F' %}bg-danger{% endif %}
+                    {% if grades.final_grade.letter_grade.value == 'A' %}bg-success{% endif %}
+                    {% if grades.final_grade.letter_grade.value == 'B' %}bg-success{% endif %}
+                    {% if grades.final_grade.letter_grade.value == 'C' %}bg-warning{% endif %}
+                    {% if grades.final_grade.letter_grade.value == 'D' %}bg-danger{% endif %}
+                    {% if grades.final_grade.letter_grade.value == 'F' %}bg-danger{% endif %}
                 ">
-                    {{ grades.final_grade.value }}
+                    {{ grades.final_grade.letter_grade.value }}
                 </div>
             </div>
             <div class="col-5">&nbsp;</div>
@@ -50,49 +32,58 @@
                     <tr>
                         <th scope="col">Property</th>
                         <th scope="col">Value</th>
-                        <th scope="col">Grade</th>
+                        <th class="text-center" scope="col">Grade</th>
+                        <th class="text-center" scope="col">Weight</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr>
                         <td>Authors</td>
                         <td>{{ authors_total }}</td>
-                        <td class="text-center">{{ grades.total_authors.value }}</td>
-                    </tr>
-                    <tr>
-                        <td>Commits</td>
-                        <td>{{ commits_total }}</td>
-                        <td class="text-center"> - </td>
+                        <td class="text-center">{{ grades.total_authors.letter_grade.value }}</td>
+                        <td class="text-center">x {{ grades.total_authors.weight }}</td>
                     </tr>
                     <tr>
                         <td>Prolific Author Commits</td>
                         <td>{{ prolific_author_commits_total }}</td>
-                        <td class="text-center">{{ grades.total_prolific_authors.value }}</td>
+                        <td class="text-center">{{ grades.total_prolific_authors.letter_grade.value }}</td>
+                        <td class="text-center">x {{ grades.total_prolific_authors.weight }}</td>
                     </tr>
                     <tr>
                         <td>Days Since Commit</td>
                         <td>{{ days_since_commit }}</td>
-                        <td class="text-center">{{ grades.days_since_commit.value }}</td>
+                        <td class="text-center">{{ grades.days_since_commit.letter_grade.value }}</td>
+                        <td class="text-center">x {{ grades.days_since_commit.weight }}</td>
                     </tr>
                     <tr>
                         <td>Recent Authors</td>
                         <td>{{ authors_recent }}</td>
-                        <td class="text-center">{{ grades.recent_authors.value }}</td>
+                        <td class="text-center">{{ grades.recent_authors.letter_grade.value }}</td>
+                        <td class="text-center">x {{ grades.recent_authors.weight }}</td>
                     </tr>
                     <tr>
-                        <td>Recent Commits</td>
-                        <td>{{ commits_recent }}</td>
-                        <td class="text-center"> - </td>
+                        <td>Typical Time Between Recent Commits</td>
+                        <td>{{ commit_interval_recent_majority_days }} Days</td>
+                        <td class="text-center">{{ grades.recent_commit_interval.letter_grade.value }}</td>
+                        <td class="text-center">x {{ grades.recent_commit_interval.weight }}</td>
                     </tr>
                     <tr>
                         <td>Recent Prolific Author Commits</td>
                         <td>{{ prolific_author_commits_recent }}</td>
-                        <td class="text-center">{{ grades.recent_prolific_authors.value }}</td>
+                        <td class="text-center">{{ grades.recent_prolific_authors.letter_grade.value }}</td>
+                        <td class="text-center">x {{ grades.recent_prolific_authors.weight }}</td>
                     </tr>
                     <tr>
                         <td>Days Since Create</td>
                         <td>{{ days_since_create }}</td>
-                        <td class="text-center">{{ grades.repo_age.value }}</td>
+                        <td class="text-center">{{ grades.repo_age.letter_grade.value }}</td>
+                        <td class="text-center">x {{ grades.repo_age.weight }}</td>
+                    </tr>
+                    <tr>
+                        <td>Typical Time Between Commits</td>
+                        <td>{{ commit_interval_all_majority_days }} Days</td>
+                        <td class="text-center">{{ grades.all_commit_interval.letter_grade.value }}</td>
+                        <td class="text-center">x {{ grades.all_commit_interval.weight }}</td>
                     </tr>
                     </tbody>
                 </table>
@@ -122,6 +113,14 @@
                     <tr>
                         <td>Lines of Code</td>
                         <td>{{ lines_of_code_total }}</td>
+                    </tr>
+                    <tr>
+                        <td>Total Commits</td>
+                        <td>{{ commits_total }}</td>
+                    </tr>
+                    <tr>
+                        <td>Recent Commits</td>
+                        <td>{{ commits_recent }}</td>
                     </tr>
                     <tr>
                         <td>File Count</td>

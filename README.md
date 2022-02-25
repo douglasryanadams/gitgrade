@@ -86,9 +86,15 @@ TODO
 - [x] Include sub-grades per metric
 - [x] Support 'deal-breaker' limits (like has no recent authors)
     - Implemented with weighting
+- [x] Add ability to invalidate cache data based on outdated grading logic
 - [ ] Tooltips for individual metrics
 - [ ] Write out description of how calculation works and include on site
 - [ ] Show recent search results on front page
+- [ ] Refactor views to use unique URL for results
+- [ ] Refactor data management to scale better
+  - Separate tables for API vs Local Data?
+  - Use models instead of data classes?
+  - Rethink grade calculating structure? (Is a plugin model feasible?)
 
 Additional Metrics
 
@@ -97,6 +103,7 @@ Additional Metrics
 - [ ] Avg time between releases
 - [ ] Avg time to resolve issues
 - [ ] Avg time to merge PRs
+- [x] Average time between commits
 - [ ] Size (files and lines of code) for primary language in repo
 
 Bugs
@@ -110,7 +117,6 @@ Bugs
 Update:
 
 - pyproject.toml
-- gitgrade/templates/gitgrade/base.html
 - aws/gitgrade-carrot.json
 
 # Misc. Notes

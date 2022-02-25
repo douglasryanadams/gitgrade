@@ -1,9 +1,11 @@
 import logging
-from typing import Dict, Optional
+from typing import Dict, Optional, Any
 from urllib.parse import urlencode
 
 from django.conf import settings
 from django.http import HttpRequest
+
+from gitgrade.util import get_version
 
 logger = logging.getLogger(__name__)
 
@@ -41,3 +43,8 @@ def github_username(request: HttpRequest) -> Dict[str, Optional[str]]:
     token = request.COOKIES.get(settings.GITHUB_TOKEN_KEY, "notset")
     logger.debug("  token: %s", token)
     return {"GITHUB_TOKEN": None if token == "notset" else token}
+
+
+def gitgrade_version(_: Optional[Any]) -> Dict[str, str]:
+    logger.debug("Rendering version of repo")
+    return {"GITGRADE_VERSION": get_version()}

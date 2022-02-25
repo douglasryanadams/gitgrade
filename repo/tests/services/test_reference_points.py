@@ -39,4 +39,5 @@ def test_baselines(
     we're doing a few "for real."
     """
     response_json = repo_input_util(url)
-    assert response_json["grades"]["final_grade"] == expected_grade
+    logger.debug("response_json=%s", response_json)
+    assert response_json["grades"]["final_grade"]["letter_grade"] == expected_grade

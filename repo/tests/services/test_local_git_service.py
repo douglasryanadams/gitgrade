@@ -2,7 +2,7 @@
 
 import json
 from datetime import datetime
-from typing import Generator
+from typing import Generator, List
 from unittest.mock import patch, Mock
 
 import pytest
@@ -35,7 +35,23 @@ def mock_commit() -> Generator[Mock, None, None]:
 
 
 @pytest.fixture
-def mock_gitpython(mock_commit) -> Generator[Mock, None, None]:
+def mock_commit_list() -> Generator[List[Mock], None, None]:
+    commits = []
+    rolling_seconds = int(
+        (datetime(2022, 1, 20) - datetime(1970, 1, 1)).total_seconds()
+    )
+    for _ in range(10):
+        new_seconds = rolling_seconds - (60 * 60 * 24)  # a day
+        commit = Mock()
+        commit.committed_date = new_seconds
+        commits.append(commit)
+        rolling_seconds = new_seconds
+
+    return commits
+
+
+@pytest.fixture
+def mock_gitpython(mock_commit, mock_commit_list) -> Generator[Mock, None, None]:
     with patch("repo.services.local_git_service.Repo") as mock:
         repo = Mock()
         mock.return_value = repo
@@ -53,6 +69,8 @@ def mock_gitpython(mock_commit) -> Generator[Mock, None, None]:
         ]
 
         repo.head.commit = mock_commit
+
+        repo.iter_commits.return_value = mock_commit_list
 
         yield mock
 
@@ -87,6 +105,10 @@ def test_fetch_local_data(
         prolific_author_commits_recent=80,
         lines_of_code_total=1000,
         files_total=10,
+        commit_interval_all_mean=float(60 * 60 * 24),
+        commit_interval_all_stdev=0,
+        commit_interval_recent_mean=float(60 * 60 * 24),
+        commit_interval_recent_stdev=0,
     )
 
     assert actual == expected
