@@ -3,6 +3,6 @@
 # Register your models here.
 from django.contrib import admin
 
-from repo.models import GitRepoData
+from repo.models import CacheData
 
-admin.site.register(GitRepoData)
+admin.site.register(CacheData)

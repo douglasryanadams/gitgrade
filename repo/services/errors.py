@@ -16,7 +16,15 @@ class ClocMissingError(Exception):
 
 class CacheMiss(Exception):
     """
-    Tried to pull data from the cache but it's not in their or its out of date
+    Tried to pull data from the cache, but it's not in their or its out of date
+    """
+
+    ...
+
+
+class InvalidRequest(Exception):
+    """
+    Something about the request was invalid but there's something the user can do to fix it
     """
 
     ...

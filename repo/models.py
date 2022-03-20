@@ -11,88 +11,97 @@ from django.db.models import (
     FloatField,
 )
 
-from repo.services.data import RepoRequestData, ApiData, LocalData
+from repo.data.general import RepoRequest
+from repo.data.git_data import GitData
 
 
-class GitRepoDataManager(Manager):
+class CacheDataManager(Manager):
     def get_by_natural_key(self, source: str, owner: str, repo: str) -> Any:
         return self.get(source=source, owner=owner, repo=repo)
 
     def create_git_repo_data(
-        self,
-        version: str,
-        url_metadata: RepoRequestData,
-        api_data: ApiData,
-        local_data: LocalData,
+        self, version: str, url_metadata: RepoRequest, data: GitData
     ):
         git_repo_data = self.create(
+            version=version,
             source=url_metadata.source,
             owner=url_metadata.owner,
             repo=url_metadata.repo,
-            version=version,
-            days_since_update=api_data.days_since_update,
-            days_since_create=api_data.days_since_create,
-            watchers=api_data.watchers,
-            pull_requests_open=api_data.pull_requests_open,
-            pull_requests_total=api_data.pull_requests_total,
-            has_issues=api_data.has_issues,
-            open_issues=api_data.open_issues,
-            days_since_commit=local_data.days_since_commit,
-            commits_total=local_data.commits_total,
-            commits_recent=local_data.commits_recent,
-            branch_count=local_data.branch_count,
-            authors_total=local_data.authors_total,
-            authors_recent=local_data.authors_recent,
-            prolific_author_commits_total=local_data.prolific_author_commits_total,
-            prolific_author_commits_recent=local_data.prolific_author_commits_recent,
-            lines_of_code_total=local_data.lines_of_code_total,
-            files_total=local_data.files_total,
-            commit_interval_all_mean=local_data.commit_interval_all_mean,
-            commit_interval_all_stdev=local_data.commit_interval_all_stdev,
-            commit_interval_recent_mean=local_data.commit_interval_recent_mean,
-            commit_interval_recent_stdev=local_data.commit_interval_recent_stdev,
+            code_lines_of_code=data.code.lines_of_code,
+            code_file_count=data.code.file_count,
+            pull_request_count=data.pull_request.count,
+            pull_request_count_open=data.pull_request.count_open,
+            commit_all_count=data.commit_all.count,
+            commit_all_count_primary_author=data.commit_all.count_primary_author,
+            commit_all_interval_mean=data.commit_all.interval.mean,
+            commit_all_interval_standard_deviation=data.commit_all.interval.standard_deviation,
+            commit_recent_count=data.commit_recent.count,
+            commit_recent_count_primary_author=data.commit_recent.count_primary_author,
+            commit_recent_interval_mean=data.commit_recent.interval.mean,
+            commit_recent_interval_standard_deviation=data.commit_recent.interval.standard_deviation,
+            contributor_days_since_create=data.contributor.days_since_create,
+            contributor_days_since_commit=data.contributor.days_since_commit,
+            contributor_branch_count=data.contributor.branch_count,
+            contributor_author_count_all=data.contributor.author_count_all,
+            contributor_author_count_recent=data.contributor.author_count_recent,
+            popularity_watcher_count=data.popularity.watcher_count,
+            popularity_has_issues=data.popularity.has_issues,
+            popularity_open_issue_count=data.popularity.open_issue_count,
         )
 
         return git_repo_data
 
 
-class GitRepoData(Model):
+class CacheData(Model):
+    """
+    This model represents that data that's cached in the DB.
+
+    All of these fields have a 1-1 relationship with the primary
+    key, so it didn't seem worth it to normalize the data into
+    separate tables.
+
+    We could cache all this as JSON blobs but we have the DB so
+    we might as well properly organize the data for now.
+    """
+
     row_created_date = DateField(auto_now_add=True)
     row_updated_date = DateField(auto_now=True)
 
     version = CharField(max_length=32)
 
-    # UrlMetadata
+    # UrlMetadata + Primary Key
     source = CharField(max_length=255)
     owner = CharField(max_length=255)
     repo = CharField(max_length=255)
 
-    # ApiData
-    days_since_update = IntegerField()
-    days_since_create = IntegerField()
-    watchers = IntegerField()
-    pull_requests_open = IntegerField()
-    pull_requests_total = IntegerField()
-    has_issues = BooleanField()
-    open_issues = IntegerField()
+    # Data
+    code_lines_of_code = IntegerField()
+    code_file_count = IntegerField()
 
-    # LocalData
-    days_since_commit = IntegerField()
-    commits_total = IntegerField()
-    commits_recent = IntegerField()
-    branch_count = IntegerField()
-    authors_total = IntegerField()
-    authors_recent = IntegerField()
-    prolific_author_commits_total = IntegerField()
-    prolific_author_commits_recent = IntegerField()
-    lines_of_code_total = IntegerField()
-    files_total = IntegerField()
-    commit_interval_all_mean = FloatField()
-    commit_interval_all_stdev = FloatField()
-    commit_interval_recent_mean = FloatField()
-    commit_interval_recent_stdev = FloatField()
+    pull_request_count = IntegerField()
+    pull_request_count_open = IntegerField()
 
-    objects = GitRepoDataManager()
+    commit_all_count = IntegerField()
+    commit_all_count_primary_author = IntegerField()
+    commit_all_interval_mean = FloatField()
+    commit_all_interval_standard_deviation = FloatField()
+
+    commit_recent_count = IntegerField()
+    commit_recent_count_primary_author = IntegerField()
+    commit_recent_interval_mean = FloatField()
+    commit_recent_interval_standard_deviation = FloatField()
+
+    contributor_days_since_create = IntegerField()
+    contributor_days_since_commit = IntegerField()
+    contributor_branch_count = IntegerField()
+    contributor_author_count_all = IntegerField()
+    contributor_author_count_recent = IntegerField()
+
+    popularity_watcher_count = IntegerField()
+    popularity_has_issues = BooleanField()
+    popularity_open_issue_count = IntegerField()
+
+    objects = CacheDataManager()
 
     class Meta:
         #  pylint: disable=too-few-public-methods

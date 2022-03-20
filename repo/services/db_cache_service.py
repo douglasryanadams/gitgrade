@@ -1,12 +1,19 @@
 import logging
 from datetime import datetime, timedelta
-from typing import Tuple
 
 from packaging.version import parse as parse_version
 from django.core.exceptions import ObjectDoesNotExist
 
-from repo.models import GitRepoData
-from repo.services.data import LocalData, ApiData, RepoRequestData
+from repo.data.general import Statistics, RepoRequest
+from repo.data.git_data import (
+    GitData,
+    CommitData,
+    PullRequestData,
+    CodeData,
+    ContributorData,
+    PopularityData,
+)
+from repo.models import CacheData
 from repo.services.errors import CacheMiss
 
 logger = logging.getLogger(__name__)
@@ -14,17 +21,15 @@ logger = logging.getLogger(__name__)
 RECENT_DAYS = 30
 
 
-def check_cache(
-    current_version: str, url_metadata: RepoRequestData
-) -> Tuple[ApiData, LocalData]:
+def check_cache(current_version: str, url_metadata: RepoRequest) -> GitData:
     logger.debug("Checking cache for existing data: %s", url_metadata)
 
     try:
-        found: GitRepoData = GitRepoData.objects.get_by_natural_key(
+        found: CacheData = CacheData.objects.get_by_natural_key(
             source=url_metadata.source, owner=url_metadata.owner, repo=url_metadata.repo
         )
-    except ObjectDoesNotExist as odne:
-        raise CacheMiss() from odne
+    except ObjectDoesNotExist as object_does_not_exist:
+        raise CacheMiss() from object_does_not_exist
     logger.info("Found cached data for: %s", url_metadata)
 
     recent = datetime.today() - timedelta(days=RECENT_DAYS)
@@ -38,80 +43,101 @@ def check_cache(
     if current_version_parsed > found_version_parsed:
         raise CacheMiss()
 
-    api_data = ApiData(
-        days_since_update=found.days_since_update,
-        days_since_create=found.days_since_create,
-        watchers=found.watchers,
-        pull_requests_open=found.pull_requests_open,
-        pull_requests_total=found.pull_requests_total,
-        has_issues=found.has_issues,
-        open_issues=found.open_issues,
+    return GitData(
+        code=CodeData(
+            lines_of_code=found.code_lines_of_code,
+            file_count=found.code_file_count,
+        ),
+        pull_request=PullRequestData(
+            count_open=found.pull_request_count_open,
+            count=found.pull_request_count,
+        ),
+        commit_all=CommitData(
+            count=found.commit_all_count,
+            count_primary_author=found.commit_all_count_primary_author,
+            interval=Statistics(
+                mean=found.commit_all_interval_mean,
+                standard_deviation=found.commit_all_interval_standard_deviation,
+            ),
+        ),
+        commit_recent=CommitData(
+            count=found.commit_recent_count,
+            count_primary_author=found.commit_recent_count_primary_author,
+            interval=Statistics(
+                mean=found.commit_recent_interval_mean,
+                standard_deviation=found.commit_recent_interval_standard_deviation,
+            ),
+        ),
+        contributor=ContributorData(
+            days_since_create=found.contributor_days_since_create,
+            days_since_commit=found.contributor_days_since_commit,
+            branch_count=found.contributor_branch_count,
+            author_count_all=found.contributor_author_count_all,
+            author_count_recent=found.contributor_author_count_recent,
+        ),
+        popularity=PopularityData(
+            watcher_count=found.popularity_watcher_count,
+            has_issues=found.popularity_has_issues,
+            open_issue_count=found.popularity_open_issue_count,
+        ),
     )
-
-    local_data = LocalData(
-        days_since_commit=found.days_since_commit,
-        commits_total=found.commits_total,
-        commits_recent=found.commits_recent,
-        branch_count=found.branch_count,
-        authors_total=found.authors_total,
-        authors_recent=found.authors_recent,
-        prolific_author_commits_total=found.prolific_author_commits_total,
-        prolific_author_commits_recent=found.prolific_author_commits_recent,
-        lines_of_code_total=found.lines_of_code_total,
-        files_total=found.files_total,
-        commit_interval_all_mean=found.commit_interval_all_mean,
-        commit_interval_all_stdev=found.commit_interval_all_stdev,
-        commit_interval_recent_mean=found.commit_interval_recent_mean,
-        commit_interval_recent_stdev=found.commit_interval_recent_stdev,
-    )
-
-    return api_data, local_data
 
 
 def patch_cache(
     version: str,
-    url_metadata: RepoRequestData,
-    api_data: ApiData,
-    local_data: LocalData,
+    url_metadata: RepoRequest,
+    data: GitData,
 ) -> None:
     logger.debug("Updating cached data for: %s", url_metadata)
-    logger.debug("  api_data: %s", api_data)
-    logger.debug("  local_data: %s", local_data)
+    logger.debug("  data: %s", data)
+
     try:
-        found: GitRepoData = GitRepoData.objects.get_by_natural_key(
+        found: CacheData = CacheData.objects.get_by_natural_key(
             source=url_metadata.source, owner=url_metadata.owner, repo=url_metadata.repo
         )
         found.version = version
 
-        found.days_since_update = api_data.days_since_update
-        found.days_since_create = api_data.days_since_create
-        found.watchers = api_data.watchers
-        found.pull_requests_open = api_data.pull_requests_open
-        found.pull_requests_total = api_data.pull_requests_total
-        found.has_issues = api_data.has_issues
-        found.open_issues = api_data.open_issues
-        found.days_since_commit = local_data.days_since_commit
-        found.commits_total = local_data.commits_total
-        found.commits_recent = local_data.commits_recent
-        found.branch_count = local_data.branch_count
-        found.authors_total = local_data.authors_total
-        found.authors_recent = local_data.authors_recent
-        found.prolific_author_commits_total = local_data.prolific_author_commits_total
-        found.prolific_author_commits_recent = local_data.prolific_author_commits_recent
-        found.lines_of_code_total = local_data.lines_of_code_total
-        found.files_total = local_data.files_total
+        # UrlMetadata + Primary Key
+        found.source = url_metadata.source
+        found.owner = url_metadata.owner
+        found.repo = url_metadata.repo
 
-        found.commit_interval_all_mean = local_data.commit_interval_all_mean
-        found.commit_interval_all_stdev = local_data.commit_interval_all_stdev
-        found.commit_interval_recent_mean = local_data.commit_interval_recent_mean
-        found.commit_interval_recent_stdev = local_data.commit_interval_recent_stdev
+        # Data
+        found.code_lines_of_code = data.code.lines_of_code
+        found.code_file_count = data.code.file_count
+
+        found.pull_request_count_open = data.pull_request.count_open
+        found.pull_request_count = data.pull_request.count
+
+        found.commit_all_count = data.commit_all.count
+        found.commit_all_count_primary_author = data.commit_all.count_primary_author
+        found.commit_all_interval_mean = data.commit_all.interval.mean
+        found.commit_all_interval_standard_deviation = (
+            data.commit_all.interval.standard_deviation
+        )
+
+        found.commit_recent_count = data.commit_recent.count
+        found.commit_recent_count_primary_author = (
+            data.commit_recent.count_primary_author
+        )
+        found.commit_recent_interval_mean = data.commit_recent.interval.mean
+        found.commit_recent_interval_standard_deviation = (
+            data.commit_recent.interval.standard_deviation
+        )
+
+        found.contributor_days_since_create = data.contributor.days_since_create
+        found.contributor_days_since_commit = data.contributor.days_since_commit
+        found.contributor_branch_count = data.contributor.branch_count
+        found.contributor_author_count_all = data.contributor.author_count_all
+        found.contributor_author_count_recent = data.contributor.author_count_recent
+
+        found.popularity_watcher_count = data.popularity.watcher_count
+        found.popularity_has_issues = data.popularity.has_issues
+        found.popularity_open_issue_count = data.popularity.open_issue_count
 
         found.save()
     except ObjectDoesNotExist:
-        git_repo_data = GitRepoData.objects.create_git_repo_data(
-            version=version,
-            url_metadata=url_metadata,
-            api_data=api_data,
-            local_data=local_data,
+        git_repo_data = CacheData.objects.create_git_repo_data(
+            version=version, url_metadata=url_metadata, data=data
         )
         git_repo_data.save()

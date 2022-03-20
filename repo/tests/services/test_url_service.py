@@ -4,7 +4,7 @@ from typing import Union
 import pytest
 from django.core.exceptions import ValidationError
 
-from repo.services.data import RepoRequestData
+from repo.data.general import RepoRequest
 from repo.services.errors import UnsupportedURL
 from repo.services.url_service import identify_source
 
@@ -14,21 +14,21 @@ from repo.services.url_service import identify_source
     [
         (
             "https://github.com/git/git",
-            RepoRequestData(source="github", owner="git", repo="git"),
+            RepoRequest(source="github", owner="git", repo="git"),
         ),
         (
             "https://github.com/apache/httpd",
-            RepoRequestData(source="github", owner="apache", repo="httpd"),
+            RepoRequest(source="github", owner="apache", repo="httpd"),
         ),
         (
             "https://bitbucket.org/atlassian/bamboo-tomcat-plugin/src/master/",
-            RepoRequestData(
+            RepoRequest(
                 source="bitbucket", owner="atlassian", repo="bamboo-tomcat-plugin"
             ),
         ),
         (
             "https://bitbucket.org/schae/test-test-test/src/master/",
-            RepoRequestData(source="bitbucket", owner="schae", repo="test-test-test"),
+            RepoRequest(source="bitbucket", owner="schae", repo="test-test-test"),
         ),
         (
             "https://opensource.ncsa.illinois.edu/bitbucket/projects/ERGO/repos/tutorial/browse",
@@ -38,13 +38,11 @@ from repo.services.url_service import identify_source
         ("gobbledygook", ValidationError),
     ],
 )
-def test_identify_source(
-    url: str, expected: Union[RepoRequestData, BaseException]
-) -> None:
+def test_identify_source(url: str, expected: Union[RepoRequest, BaseException]) -> None:
     """
     Should make sure we're parsing repo paths correctly and document our supported/unsupported URL examples
     """
-    if isinstance(expected, RepoRequestData):
+    if isinstance(expected, RepoRequest):
         actual_metadata = identify_source(url)
         assert actual_metadata == expected
     else:

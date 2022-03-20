@@ -4,7 +4,7 @@
 {% block content %}
     <div>
         <section>
-            <form action='/' method='post'>
+            <form action='/result/' method='post'>
                 {% csrf_token %}
                 {% bootstrap_form form %}
                 <div class="d-flex justify-content-center">
@@ -15,9 +15,6 @@
         <section class="pt-3">
             <p>
                 Enter the link to a repository from either Github or Bitbucket to get a grade for that repository!
-            </p>
-            <p>
-                Example: <code>https://github.com/douglasryanadams/gitgrade</code>
             </p>
         </section>
     </div>

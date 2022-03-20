@@ -8,8 +8,9 @@ from unittest.mock import patch, Mock
 import pytest
 from freezegun import freeze_time
 
-from repo.services.data import RepoRequestData, LocalData
-from repo.services.local_git_service import fetch_local_data
+from repo.data.from_source import TimeData, DataFromClone
+from repo.data.general import SECONDS_IN_DAY, Statistics, RepoRequest
+from repo.services.local_git_service import fetch_clone_data
 
 
 @pytest.fixture
@@ -55,7 +56,6 @@ def mock_gitpython(mock_commit, mock_commit_list) -> Generator[Mock, None, None]
     with patch("repo.services.local_git_service.Repo") as mock:
         repo = Mock()
         mock.return_value = repo
-        # mock.clone_from.return_value = repo
 
         repo.remotes = {"origin": Mock()}
 
@@ -91,24 +91,32 @@ def mock_subprocess() -> Generator[Mock, None, None]:
 def test_fetch_local_data(
     mock_os: Mock, mock_shutil: Mock, mock_gitpython: Mock, mock_subprocess: Mock
 ) -> None:
-    url_data = RepoRequestData(source="github", owner="git", repo="git")
-    actual = fetch_local_data(url_data)
+    url_data = RepoRequest(source="github", owner="git", repo="git")
+    actual = fetch_clone_data(url_data)
 
-    expected = LocalData(
+    expected = DataFromClone(
         days_since_commit=10,
-        commits_total=500,
-        commits_recent=100,
         branch_count=2,
-        authors_total=5,
-        authors_recent=2,
-        prolific_author_commits_total=400,
-        prolific_author_commits_recent=80,
-        lines_of_code_total=1000,
-        files_total=10,
-        commit_interval_all_mean=float(60 * 60 * 24),
-        commit_interval_all_stdev=0,
-        commit_interval_recent_mean=float(60 * 60 * 24),
-        commit_interval_recent_stdev=0,
+        lines_of_code=1000,
+        file_count=10,
+        time_all=TimeData(
+            commit_count=500,
+            commit_count_primary_author=400,
+            commit_interval=Statistics(
+                mean=float(SECONDS_IN_DAY),
+                standard_deviation=0.0,
+            ),
+            author_count=5,
+        ),
+        time_recent=TimeData(
+            commit_count=100,
+            commit_count_primary_author=80,
+            commit_interval=Statistics(
+                mean=float(SECONDS_IN_DAY),
+                standard_deviation=0.0,
+            ),
+            author_count=2,
+        ),
     )
 
     assert actual == expected

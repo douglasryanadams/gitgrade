@@ -3,7 +3,7 @@ from urllib.parse import urlparse
 
 from django.core.validators import URLValidator
 
-from repo.services.data import RepoRequestData
+from repo.data.general import RepoRequest
 from repo.services.errors import UnsupportedURL
 
 hostname_to_source = {
@@ -14,7 +14,7 @@ hostname_to_source = {
 logger = logging.getLogger(__name__)
 
 
-def identify_source(repo_url: str) -> RepoRequestData:
+def identify_source(repo_url: str) -> RepoRequest:
     """
     This method returns metadata about the repo based on the URL
 
@@ -46,4 +46,4 @@ def identify_source(repo_url: str) -> RepoRequestData:
     logger.debug("  source: %s", source_name)
     logger.debug("  owner: %s", owner_name)
     logger.debug("  repo: %s", repo_name)
-    return RepoRequestData(source=source_name, owner=owner_name, repo=repo_name)
+    return RepoRequest(source=source_name, owner=owner_name, repo=repo_name)

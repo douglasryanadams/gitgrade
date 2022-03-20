@@ -8,11 +8,13 @@ from unittest.mock import patch, Mock
 import pytest
 from freezegun import freeze_time
 
+from repo.data.from_source import DataFromAPI
+from repo.data.general import RepoRequest
+
 from repo.services.rest_api_service import (
     _fetch_bitbucket_api_data,
     _fetch_github_api_data,
 )
-from repo.services.data import RepoRequestData, ApiData
 from repo.tests import bitbucket_objects
 
 
@@ -56,18 +58,18 @@ def test_fetch_bitbucket(patch_bitbucket_requests: Mock) -> None:  # pylint: dis
 
     Note: Careful running this w/o mock data, Bitbucket has very low rate limits
     """
-    source = RepoRequestData(
+    source = RepoRequest(
         source="bitbucket", owner="atlassian", repo="bamboo-tomcat-plugin"
     )
     actual = _fetch_bitbucket_api_data(source)
-    expected = ApiData(
-        days_since_create=663,
+    expected = DataFromAPI(
         days_since_update=307,
-        watchers=2,
-        pull_requests_open=0,
-        pull_requests_total=1,
+        days_since_create=663,
+        watcher_count=2,
+        pull_request_count_open=0,
+        pull_request_count=1,
         has_issues=False,
-        open_issues=-1,
+        open_issue_count=-1,
     )
     assert actual == expected
 
@@ -100,15 +102,15 @@ def patch_github_client() -> Generator[Mock, None, None]:
 
 @freeze_time("2022-01-30")
 def test_fetch_github(patch_github_client: Mock) -> None:
-    source = RepoRequestData(source="github", owner="git", repo="git")
+    source = RepoRequest(source="github", owner="git", repo="git")
     actual = _fetch_github_api_data(source)
-    expected = ApiData(
-        days_since_create=4939,
+    expected = DataFromAPI(
         days_since_update=14,
-        watchers=40736,
-        pull_requests_open=86,
-        pull_requests_total=1016,
+        days_since_create=4939,
+        watcher_count=40736,
+        pull_request_count_open=86,
+        pull_request_count=1016,
         has_issues=False,
-        open_issues=93,
+        open_issue_count=93,
     )
     assert actual == expected

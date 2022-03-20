@@ -1,70 +1,114 @@
 # pylint: disable=too-many-return-statements, too-few-public-methods
 
 import logging
+from typing import Union, Optional
 
-from repo.services.data import ApiData, LocalData, Grade, TestGrades, TestGrade
+from repo.data.general import Statistics, SECONDS_IN_DAY
+from repo.data.git_data import GitData
+from repo.data.grade import TestGrade, TestGrades, Grade
 
 logger = logging.getLogger(__name__)
 
 
-class DaysSinceCommit:
+def _construct_grade(
+    points_max: float,
+    points_earned: float,
+    raw_number: Union[int, float],
+    unit: Optional[str] = None,
+) -> TestGrade:
+    score = points_earned / points_max
+
+    if score > 0.9:
+        letter_grade = Grade.A
+    elif score > 0.8:
+        letter_grade = Grade.B
+    elif score > 0.7:
+        letter_grade = Grade.C
+    elif score > 0.6:
+        letter_grade = Grade.D
+    else:
+        letter_grade = Grade.F
+
+    weight = points_max / 100
+    return TestGrade(
+        letter_grade=letter_grade,
+        points_max=points_max,
+        points_earned=points_earned,
+        weight=points_max / 100,
+        weight_str=f"{weight:.2f}",
+        raw_number=raw_number,
+        unit=unit,
+    )
+
+
+def grade_days_since_commit(days_since_commit: int) -> TestGrade:
     """
     Scores based on how long it's been since the last commit.
     Encourages frequent maintenance to codebase.
 
     Tensions:
-        - RepoAge
+        - Repo Age
     """
+    points_max = 200.0
 
-    max_score = 200
+    if days_since_commit > 365 * 2:
+        points_earned = 0.0
+    elif days_since_commit > 365:
+        points_earned = points_max * 0.5
+    elif days_since_commit > 182:
+        points_earned = points_max * 0.6
+    elif days_since_commit > 91:
+        points_earned = points_max * 0.7
+    elif days_since_commit > 60:
+        points_earned = points_max * 0.8
+    elif days_since_commit > 30:
+        points_earned = points_max * 0.9
+    else:
+        points_earned = points_max
 
-    @classmethod
-    def get_score(cls, days_since_commit: int) -> float:
-        if days_since_commit > 365 * 2:
-            return 0
-        if days_since_commit > 365:
-            return cls.max_score * 0.5
-        if days_since_commit > 182:
-            return cls.max_score * 0.6
-        if days_since_commit > 91:
-            return cls.max_score * 0.7
-        if days_since_commit > 60:
-            return cls.max_score * 0.8
-        if days_since_commit > 30:
-            return cls.max_score * 0.9
-        return cls.max_score
+    return _construct_grade(
+        points_max=points_max,
+        points_earned=points_earned,
+        raw_number=days_since_commit,
+        unit="Days",
+    )
 
 
-class RepoAge:
+def grade_days_since_create(days_since_create: int) -> TestGrade:
     """
     Scores repo based on how long it's been around.
-    Encourages using older well tested codebases.
+    Encourages using older well tested code bases.
 
     Tensions:
         - DaysSinceCommit
         - CommitInterval
     """
+    points_max = 125.0
 
-    max_score = 50
+    if days_since_create > 365 * 4:
+        points_earned = points_max
+    elif days_since_create > 365 * 3:
+        points_earned = points_max * 0.9
+    elif days_since_create > 365 * 2:
+        points_earned = points_max * 0.8
+    elif days_since_create > 365:
+        points_earned = points_max * 0.7
+    elif days_since_create > 182:
+        points_earned = points_max * 0.6
+    elif days_since_create > 90:
+        points_earned = points_max * 0.5
+    else:
+        points_earned = 0.0
 
-    @classmethod
-    def get_score(cls, days_since_create: int) -> float:
-        if days_since_create > 365 * 4:
-            return cls.max_score
-        if days_since_create > 365 * 3:
-            return cls.max_score * 0.9
-        if days_since_create > 365 * 2:
-            return cls.max_score * 0.8
-        if days_since_create > 365:
-            return cls.max_score * 0.7
-        if days_since_create > 182:
-            return cls.max_score * 0.6
-        if days_since_create > 90:
-            return cls.max_score * 0.5
-        return 0
+    return _construct_grade(
+        points_max=points_max,
+        points_earned=points_earned,
+        raw_number=days_since_create,
+        unit="Days",
+    )
 
 
-class TotalAuthors:
+def grade_authors_total(authors_total: int) -> TestGrade:
     """
     Scores repo based on how many contributors have helped
     Encourages redundant maintainers and knowledge duplication
@@ -73,27 +117,32 @@ class TotalAuthors:
         - Total Prolific Authors
         - Recent Authors
     """
+    points_max = 100.0
 
-    max_score = 100
+    if authors_total > 50:
+        points_earned = points_max
+    elif authors_total > 25:
+        points_earned = points_max * 0.9
+    elif authors_total > 10:
+        points_earned = points_max * 0.8
+    elif authors_total > 3:
+        points_earned = points_max * 0.7
+    elif authors_total > 1:
+        points_earned = points_max * 0.6
+    elif authors_total > 0:
+        points_earned = points_max * 0.5
+    else:
+        points_earned = 0.0
 
-    @classmethod
-    def get_score(cls, authors_total: int) -> float:
-        if authors_total > 50:
-            return cls.max_score
-        if authors_total > 25:
-            return cls.max_score * 0.9
-        if authors_total > 10:
-            return cls.max_score * 0.8
-        if authors_total > 3:
-            return cls.max_score * 0.7
-        if authors_total > 1:
-            return cls.max_score * 0.6
-        if authors_total > 0:
-            return cls.max_score * 0.5
-        return 0  # Only really possible if the only author abandoned the platform
+    return _construct_grade(
+        points_max=points_max,
+        points_earned=points_earned,
+        raw_number=authors_total,
+        unit="Authors",
+    )
 
 
-class RecentAuthors:
+def grade_authors_recent(authors_recent: int) -> TestGrade:
     """
     Scores repo based on recent contributors
     Encourages retaining active contributions from diverse perspectives
@@ -102,23 +151,30 @@ class RecentAuthors:
         - Recent Prolific Authors
         - Total Authors
     """
+    points_max = 150.0
 
-    max_score = 150
+    if authors_recent > 10:
+        points_earned = points_max
+    elif authors_recent > 5:
+        points_earned = points_max * 0.9
+    elif authors_recent > 3:
+        points_earned = points_max * 0.8
+    elif authors_recent > 1:
+        points_earned = points_max * 0.7
+    else:
+        points_earned = points_max * 0.5
 
-    @classmethod
-    def get_score(cls, authors_recent: int) -> float:
-        if authors_recent > 10:
-            return cls.max_score
-        if authors_recent > 5:
-            return cls.max_score * 0.9
-        if authors_recent > 3:
-            return cls.max_score * 0.8
-        if authors_recent > 1:
-            return cls.max_score * 0.7
-        return cls.max_score * 0.5
+    return _construct_grade(
+        points_max=points_max,
+        points_earned=points_earned,
+        raw_number=authors_recent,
+        unit="Authors",
+    )
 
 
-class TotalProlificAuthors:
+def grade_commits_all_by_primary_author(
+    total_commits: int, primary_author_commits: int
+) -> TestGrade:
     """
     Scores repo based percentage of contributions from single author
     Encourages having a leader for the project
@@ -126,37 +182,42 @@ class TotalProlificAuthors:
     Tensions:
         - Total Authors
     """
-
-    max_score = 100
-
-    @classmethod
-    def get_score(cls, total_commits: int, prolific_author_commits: int) -> float:
-        if total_commits == 0:
-            # If somehow there have been no commits, return a neutral "C"
-            return cls.max_score * 0.75
-
+    points_max = 100
+    if total_commits == 0:
+        # If somehow there have been no commits, return a neutral "C"
+        points_earned = points_max * 0.75
+    else:
         logger.debug(
             "  TotalProlificAuthors (%s/%s): %s",
-            prolific_author_commits,
+            primary_author_commits,
             total_commits,
-            prolific_author_commits / total_commits,
+            primary_author_commits / total_commits,
         )
 
-        if prolific_author_commits / total_commits > 0.25:
-            return cls.max_score
-        if prolific_author_commits / total_commits > 0.10:
-            return cls.max_score * 0.9
-        if prolific_author_commits / total_commits > 0.05:
-            return cls.max_score * 0.8
-        if prolific_author_commits / total_commits > 0.025:
-            return cls.max_score * 0.7
-        if prolific_author_commits / total_commits > 0.01:
-            return cls.max_score * 0.6
+        if primary_author_commits / total_commits > 0.25:
+            points_earned = points_max
+        elif primary_author_commits / total_commits > 0.10:
+            points_earned = points_max * 0.9
+        elif primary_author_commits / total_commits > 0.05:
+            points_earned = points_max * 0.8
+        elif primary_author_commits / total_commits > 0.025:
+            points_earned = points_max * 0.7
+        elif primary_author_commits / total_commits > 0.01:
+            points_earned = points_max * 0.6
+        else:
+            points_earned = points_max * 0.5
 
-        return cls.max_score * 0.5
+    return _construct_grade(
+        points_max=points_max,
+        points_earned=points_earned,
+        raw_number=round(100 * (primary_author_commits / total_commits), 2),
+        unit="Percent",
+    )
 
 
-class RecentProlificAuthors:
+def grade_commits_recent_by_primary_author(
+    total_commits: int, primary_author_commits: int
+) -> TestGrade:
     """
     Scores repo based percentage of contributions from single author
     Encourages having a leader for the project
@@ -164,76 +225,77 @@ class RecentProlificAuthors:
     Tensions:
         - Recent Authors
     """
-
-    max_score = 100
-
-    @classmethod
-    def get_score(cls, total_commits: int, prolific_author_commits: int) -> float:
-        if total_commits == 0:
-            return cls.max_score * 0.75
-
+    points_max = 100
+    if total_commits == 0:
+        points_earned = points_max * 0.50
+    else:
         logger.debug(
             "  RecentProlificAuthors (%s/%s): %s",
-            prolific_author_commits,
+            primary_author_commits,
             total_commits,
-            prolific_author_commits / total_commits,
+            primary_author_commits / total_commits,
         )
 
-        if prolific_author_commits / total_commits > 0.40:
-            return cls.max_score
-        if prolific_author_commits / total_commits > 0.25:
-            return cls.max_score * 0.9
-        if prolific_author_commits / total_commits > 0.10:
-            return cls.max_score * 0.8
-        if prolific_author_commits / total_commits > 0.05:
-            return cls.max_score * 0.7
-        if prolific_author_commits / total_commits > 0.025:
-            return cls.max_score * 0.6
+        if primary_author_commits / total_commits > 0.40:
+            points_earned = points_max
+        elif primary_author_commits / total_commits > 0.25:
+            points_earned = points_max * 0.9
+        elif primary_author_commits / total_commits > 0.10:
+            points_earned = points_max * 0.8
+        elif primary_author_commits / total_commits > 0.05:
+            points_earned = points_max * 0.7
+        elif primary_author_commits / total_commits > 0.025:
+            points_earned = points_max * 0.6
+        else:
+            points_earned = points_max * 0.25
 
-        return cls.max_score * 0.25
+    if total_commits:
+        raw_number = round(100 * (primary_author_commits / total_commits), 2)
+    else:
+        raw_number = 0
+
+    return _construct_grade(
+        points_max=points_max,
+        points_earned=points_earned,
+        raw_number=raw_number,
+        unit="Percent",
+    )
 
 
-class CommitInterval:
+def grade_commit_interval(commit_stats: Statistics) -> TestGrade:
     """
-    Scores repo based on 1 std deviation above the mean of time beween commits
+    Scores repo based on 1 std deviation above the mean of time between commits
 
     Tensions:
         - RepoAge
     """
+    points_max = 100.0
+    majority = commit_stats.majority
 
-    max_score = 100
+    if majority == 0:  # Implies that there's no activity at all
+        points_earned = 0.0
+    elif majority < (SECONDS_IN_DAY * 7):
+        points_earned = points_max
+    elif majority < (SECONDS_IN_DAY * 14):
+        points_earned = points_max * 0.9
+    elif majority < (SECONDS_IN_DAY * 28):
+        points_earned = points_max * 0.8
+    elif majority < (SECONDS_IN_DAY * 60):
+        points_earned = points_max * 0.7
+    elif majority < (SECONDS_IN_DAY * 90):
+        points_earned = points_max * 0.6
+    else:
+        points_earned = points_max * 0.5
 
-    @classmethod
-    def get_score(cls, mean: float, stdev: float) -> float:
-        majority = mean + stdev
-
-        if majority < (60 * 60 * 24 * 7):
-            return cls.max_score
-        if majority < (60 * 60 * 24 * 14):
-            return cls.max_score * 0.9
-        if majority < (60 * 60 * 24 * 28):
-            return cls.max_score * 0.8
-        if majority < (60 * 60 * 24 * 60):
-            return cls.max_score * 0.7
-        if majority < (60 * 60 * 24 * 90):
-            return cls.max_score * 0.6
-        return cls.max_score * 0.5
-
-
-def _get_letter_grade(score: float, total_max_score: float) -> Grade:
-    score = score / total_max_score
-    if score > 0.9:
-        return Grade.A
-    if score > 0.8:
-        return Grade.B
-    if score > 0.7:
-        return Grade.C
-    if score > 0.6:
-        return Grade.D
-    return Grade.F
+    return _construct_grade(
+        points_max=points_max,
+        points_earned=points_earned,
+        raw_number=round(majority / SECONDS_IN_DAY, 2),
+        unit="Days",
+    )
 
 
-def calculate_grade(api_data: ApiData, local_data: LocalData) -> TestGrades:
+def calculate_grade(data: GitData) -> TestGrades:
     """
     This method calculates a grade for the repo using a similar system to
     American public schools (for better or worse). Each metric is a "test"
@@ -241,95 +303,38 @@ def calculate_grade(api_data: ApiData, local_data: LocalData) -> TestGrades:
     others.
     """
     logger.info("Calculating grade")
-    logger.debug("  api_data: %s", api_data)
-    logger.debug("  local_data: %s", local_data)
+    logger.debug("  data: %s", data)
 
-    days_since_commit = DaysSinceCommit.get_score(local_data.days_since_commit)
-    repo_age = RepoAge.get_score(api_data.days_since_create)
-    total_authors = TotalAuthors.get_score(local_data.authors_total)
-    recent_authors = RecentAuthors.get_score(local_data.authors_recent)
-    total_prolific_authors = TotalProlificAuthors.get_score(
-        local_data.commits_total, local_data.prolific_author_commits_total
-    )
-    recent_prolific_authors = RecentProlificAuthors.get_score(
-        local_data.commits_recent, local_data.prolific_author_commits_recent
-    )
-    all_commit_interval = CommitInterval.get_score(
-        local_data.commit_interval_all_mean, local_data.commit_interval_all_stdev
-    )
-    recent_commit_interval = CommitInterval.get_score(
-        local_data.commit_interval_recent_mean, local_data.commit_interval_recent_stdev
-    )
+    test_grades = {
+        "days_since_commit": grade_days_since_commit(
+            data.contributor.days_since_commit
+        ),
+        "days_since_create": grade_days_since_create(
+            data.contributor.days_since_create
+        ),
+        "author_count_all": grade_authors_total(data.contributor.author_count_all),
+        "author_count_recent": grade_authors_recent(
+            data.contributor.author_count_recent
+        ),
+        "commit_count_primary_author_all": grade_commits_all_by_primary_author(
+            data.commit_all.count,
+            data.commit_all.count_primary_author,
+        ),
+        "commit_count_primary_author_recent": grade_commits_recent_by_primary_author(
+            data.commit_recent.count,
+            data.commit_recent.count_primary_author,
+        ),
+        "commit_interval_all": grade_commit_interval(data.commit_all.interval),
+        "commit_interval_recent": grade_commit_interval(data.commit_recent.interval),
+    }
 
-    total_max_score = sum(
-        [
-            DaysSinceCommit.max_score,
-            RepoAge.max_score,
-            TotalAuthors.max_score,
-            RecentAuthors.max_score,
-            TotalProlificAuthors.max_score,
-            RecentProlificAuthors.max_score,
-            CommitInterval.max_score * 2,  # Account for both recent and total
-        ]
-    )
-
-    repo_final_score = sum(
-        [
-            days_since_commit,
-            repo_age,
-            total_authors,
-            recent_authors,
-            total_prolific_authors,
-            recent_prolific_authors,
-            all_commit_interval,
-            recent_commit_interval,
-        ]
+    final_points_max = sum([grade.points_max for grade in test_grades.values()])
+    final_points_earned = sum([grade.points_earned for grade in test_grades.values()])
+    final_grade = _construct_grade(
+        points_max=final_points_max,
+        points_earned=final_points_earned,
+        raw_number=round(100 * (final_points_earned / final_points_max), 2),
+        unit="Percent",
     )
 
-    return TestGrades(
-        days_since_commit=TestGrade(
-            letter_grade=_get_letter_grade(
-                days_since_commit, DaysSinceCommit.max_score
-            ),
-            weight=round(DaysSinceCommit.max_score / 100, 1),
-        ),
-        repo_age=TestGrade(
-            letter_grade=_get_letter_grade(repo_age, RepoAge.max_score),
-            weight=round(RepoAge.max_score / 100, 1),
-        ),
-        total_authors=TestGrade(
-            letter_grade=_get_letter_grade(total_authors, TotalAuthors.max_score),
-            weight=round(TotalAuthors.max_score / 100, 1),
-        ),
-        recent_authors=TestGrade(
-            letter_grade=_get_letter_grade(recent_authors, RecentAuthors.max_score),
-            weight=round(RecentAuthors.max_score / 100, 1),
-        ),
-        total_prolific_authors=TestGrade(
-            letter_grade=_get_letter_grade(
-                total_prolific_authors, TotalProlificAuthors.max_score
-            ),
-            weight=round(TotalProlificAuthors.max_score / 100, 1),
-        ),
-        recent_prolific_authors=TestGrade(
-            letter_grade=_get_letter_grade(
-                recent_prolific_authors, RecentProlificAuthors.max_score
-            ),
-            weight=round(RecentProlificAuthors.max_score / 100, 1),
-        ),
-        all_commit_interval=TestGrade(
-            letter_grade=_get_letter_grade(
-                all_commit_interval, CommitInterval.max_score
-            ),
-            weight=round(CommitInterval.max_score / 100, 1),
-        ),
-        recent_commit_interval=TestGrade(
-            letter_grade=_get_letter_grade(
-                recent_commit_interval, CommitInterval.max_score
-            ),
-            weight=round(CommitInterval.max_score / 100, 1),
-        ),
-        final_grade=TestGrade(
-            letter_grade=_get_letter_grade(repo_final_score, total_max_score), weight=1
-        ),
-    )
+    return TestGrades(final_grade=final_grade, **test_grades)

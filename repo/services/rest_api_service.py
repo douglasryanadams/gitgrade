@@ -5,7 +5,8 @@ from typing import Dict, Any, Tuple, cast
 import requests
 from github import Github
 
-from repo.services.data import RepoRequestData, ApiData
+from repo.data.from_source import DataFromAPI
+from repo.data.general import RepoRequest
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ def _get_watcher_count(repo_url: str) -> int:
     return cast(int, watchers_json.get("size", -1))
 
 
-def _fetch_bitbucket_api_data(url_data: RepoRequestData) -> ApiData:
+def _fetch_bitbucket_api_data(url_data: RepoRequest) -> DataFromAPI:
     # 1 Call Each:
     # Repo itself - 1
     # Watchers - 1
@@ -83,18 +84,18 @@ def _fetch_bitbucket_api_data(url_data: RepoRequestData) -> ApiData:
 
     pulls_all_count, pulls_open_count = _get_pull_request_counts(repo_url)
 
-    return ApiData(
+    return DataFromAPI(
         days_since_update=days_since_update,
         days_since_create=days_since_create,
-        watchers=watchers_count,
-        pull_requests_open=pulls_open_count,
-        pull_requests_total=pulls_all_count,
+        watcher_count=watchers_count,
+        pull_request_count_open=pulls_open_count,
+        pull_request_count=pulls_all_count,
         has_issues=repo_json.get("has_issues", False),
-        open_issues=-1,
+        open_issue_count=-1,
     )
 
 
-def _fetch_github_api_data(repo_request_data: RepoRequestData) -> ApiData:
+def _fetch_github_api_data(repo_request_data: RepoRequest) -> DataFromAPI:
     # Calls:
     # Repo itself - 1
     # Pull Requests (open and total) - 2
@@ -113,14 +114,14 @@ def _fetch_github_api_data(repo_request_data: RepoRequestData) -> ApiData:
     open_pulls = repo.get_pulls(state="open")
     all_pulls = repo.get_pulls(state="all")
 
-    return ApiData(
+    return DataFromAPI(
         days_since_update=days_since_update,
         days_since_create=days_since_create,
-        watchers=repo.watchers_count,
-        pull_requests_open=open_pulls.totalCount,
-        pull_requests_total=all_pulls.totalCount,
+        watcher_count=repo.watchers_count,
+        pull_request_count_open=open_pulls.totalCount,
+        pull_request_count=all_pulls.totalCount,
         has_issues=repo.has_issues,
-        open_issues=repo.open_issues_count,
+        open_issue_count=repo.open_issues_count,
     )
 
 
@@ -130,7 +131,7 @@ fetch_source_map = {
 }
 
 
-def fetch_api_data(url_data: RepoRequestData) -> ApiData:
+def fetch_api_data(url_data: RepoRequest) -> DataFromAPI:
     """
     Make API calls required to get data from APIs
     """

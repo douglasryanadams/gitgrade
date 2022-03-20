@@ -2,7 +2,7 @@ import logging
 
 import pytest
 
-from repo.services.data import Grade
+from repo.data.grade import Grade
 from repo.services.repo_input_service import repo_input_util
 
 logger = logging.getLogger(__name__)

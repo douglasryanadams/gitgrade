@@ -20,7 +20,12 @@
         </div>
         <div class="row mt-5 mb-2">
             <div class="col text-center">
-                {{ metadata.source }} | {{ metadata.owner }}/{{ metadata.repo }}
+                <a
+                        href="/result/{{ request.source }}/{{ request.owner }}/{{ request.repo }}"
+                        style="text-decoration: none;"
+                >
+                    {{ request.source }} | {{ request.owner }}/{{ request.repo }}
+                </a>
             </div>
         </div>
         <div class="row my-5">
@@ -38,52 +43,64 @@
                     </thead>
                     <tbody>
                     <tr>
-                        <td>Authors</td>
-                        <td>{{ authors_total }}</td>
-                        <td class="text-center">{{ grades.total_authors.letter_grade.value }}</td>
-                        <td class="text-center">x {{ grades.total_authors.weight }}</td>
+                        <td>Days Since Create</td>
+                        <td>{{ data.contributor.days_since_create }}</td>
+                        <td class="text-center">{{ grades.days_since_create.letter_grade.value }}</td>
+                        <td class="text-center">x {{ grades.days_since_create.weight_str }}</td>
                     </tr>
                     <tr>
-                        <td>Prolific Author Commits</td>
-                        <td>{{ prolific_author_commits_total }}</td>
-                        <td class="text-center">{{ grades.total_prolific_authors.letter_grade.value }}</td>
-                        <td class="text-center">x {{ grades.total_prolific_authors.weight }}</td>
+                        <td>Author Count</td>
+                        <td>{{ data.contributor.author_count_all }}</td>
+                        <td class="text-center">{{ grades.author_count_all.letter_grade.value }}</td>
+                        <td class="text-center">x {{ grades.author_count_all.weight_str }}</td>
+                    </tr>
+                    <tr>
+                        <td>Primary Author Commit Count</td>
+                        <td>{{ data.commit_all.count_primary_author }}</td>
+                        <td class="text-center">{{ grades.commit_count_primary_author_all.letter_grade.value }}</td>
+                        <td class="text-center">x {{ grades.commit_count_primary_author_all.weight_str }}</td>
                     </tr>
                     <tr>
                         <td>Days Since Commit</td>
-                        <td>{{ days_since_commit }}</td>
+                        <td>{{ data.contributor.days_since_commit }}</td>
                         <td class="text-center">{{ grades.days_since_commit.letter_grade.value }}</td>
-                        <td class="text-center">x {{ grades.days_since_commit.weight }}</td>
+                        <td class="text-center">x {{ grades.days_since_commit.weight_str }}</td>
                     </tr>
                     <tr>
-                        <td>Recent Authors</td>
-                        <td>{{ authors_recent }}</td>
-                        <td class="text-center">{{ grades.recent_authors.letter_grade.value }}</td>
-                        <td class="text-center">x {{ grades.recent_authors.weight }}</td>
+                        <td>Typical Time Between All Commits</td>
+                        <td>{{ view.commit_interval_days_all }} Days</td>
+                        <td class="text-center">{{ grades.commit_interval_all.letter_grade.value }}</td>
+                        <td class="text-center">x {{ grades.commit_interval_all.weight_str }}</td>
+                    </tr>
+                    <tr>
+                        <td>Recent Author Count</td>
+                        <td>{{ data.contributor.author_count_recent }}</td>
+                        <td class="text-center">{{ grades.author_count_recent.letter_grade.value }}</td>
+                        <td class="text-center">x {{ grades.author_count_recent.weight_str }}</td>
+                    </tr>
+                    <tr>
+                        <td>Recent Primary Author Commits</td>
+                        <td>{{ data.commit_recent.count_primary_author }}</td>
+                        <td class="text-center">{{ grades.commit_count_primary_author_recent.letter_grade.value }}</td>
+                        <td class="text-center">x {{ grades.commit_count_primary_author_recent.weight_str }}</td>
                     </tr>
                     <tr>
                         <td>Typical Time Between Recent Commits</td>
-                        <td>{{ commit_interval_recent_majority_days }} Days</td>
-                        <td class="text-center">{{ grades.recent_commit_interval.letter_grade.value }}</td>
-                        <td class="text-center">x {{ grades.recent_commit_interval.weight }}</td>
+                        <td>{{ view.commit_interval_days_recent }} Days</td>
+                        <td class="text-center">{{ grades.commit_interval_recent.letter_grade.value }}</td>
+                        <td class="text-center">x {{ grades.commit_interval_recent.weight_str }}</td>
                     </tr>
                     <tr>
-                        <td>Recent Prolific Author Commits</td>
-                        <td>{{ prolific_author_commits_recent }}</td>
-                        <td class="text-center">{{ grades.recent_prolific_authors.letter_grade.value }}</td>
-                        <td class="text-center">x {{ grades.recent_prolific_authors.weight }}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
                     </tr>
                     <tr>
-                        <td>Days Since Create</td>
-                        <td>{{ days_since_create }}</td>
-                        <td class="text-center">{{ grades.repo_age.letter_grade.value }}</td>
-                        <td class="text-center">x {{ grades.repo_age.weight }}</td>
-                    </tr>
-                    <tr>
-                        <td>Typical Time Between Commits</td>
-                        <td>{{ commit_interval_all_majority_days }} Days</td>
-                        <td class="text-center">{{ grades.all_commit_interval.letter_grade.value }}</td>
-                        <td class="text-center">x {{ grades.all_commit_interval.weight }}</td>
+                        <th scope="row">Final Grade</th>
+                        <th scope="row">{{ grades.final_grade.raw_number }}%</th>
+                        <th scope="row" class="text-center">{{ grades.final_grade.letter_grade.value }}</th>
+                        <th scope="row" class="text-center">&nbsp;</th>
                     </tr>
                     </tbody>
                 </table>
@@ -103,40 +120,40 @@
                     </thead>
                     <tbody>
                     <tr>
-                        <td>Watchers</td>
-                        <td>{{ watchers }}</td>
+                        <td>Watcher Count</td>
+                        <td>{{ data.popularity.watcher_count }}</td>
                     </tr>
                     <tr>
-                        <td>Branches</td>
-                        <td>{{ branch_count }}</td>
+                        <td>Branch Count</td>
+                        <td>{{ data.contributor.branch_count }}</td>
                     </tr>
                     <tr>
                         <td>Lines of Code</td>
-                        <td>{{ lines_of_code_total }}</td>
+                        <td>{{ data.code.lines_of_code }}</td>
                     </tr>
                     <tr>
                         <td>Total Commits</td>
-                        <td>{{ commits_total }}</td>
+                        <td>{{ data.commit_all.count }}</td>
                     </tr>
                     <tr>
                         <td>Recent Commits</td>
-                        <td>{{ commits_recent }}</td>
+                        <td>{{ data.commit_recent.count }}</td>
                     </tr>
                     <tr>
                         <td>File Count</td>
-                        <td>{{ files_total }}</td>
+                        <td>{{ data.code.file_count }}</td>
                     </tr>
                     <tr>
                         <td>Pull Requests Open</td>
-                        <td>{{ pull_requests_open }}</td>
+                        <td>{{ data.pull_request.count_open }}</td>
                     </tr>
                     <tr>
                         <td>Pull Requests Total</td>
-                        <td>{{ pull_requests_total }}</td>
+                        <td>{{ data.pull_request.count }}</td>
                     </tr>
                     <tr>
                         <td>Open Issues</td>
-                        <td>{{ open_issues }}</td>
+                        <td>{{ data.popularity.open_issue_count }}</td>
                     </tr>
                     </tbody>
                 </table>
