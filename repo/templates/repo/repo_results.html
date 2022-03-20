@@ -48,30 +48,30 @@
                         <td class="text-center">{{ grades.days_since_create.letter_grade.value }}</td>
                         <td class="text-center">x {{ grades.days_since_create.weight_str }}</td>
                     </tr>
-                    <tr>
-                        <td>Author Count</td>
-                        <td>{{ data.contributor.author_count_all }}</td>
-                        <td class="text-center">{{ grades.author_count_all.letter_grade.value }}</td>
-                        <td class="text-center">x {{ grades.author_count_all.weight_str }}</td>
-                    </tr>
-                    <tr>
-                        <td>Primary Author Commit Count</td>
-                        <td>{{ data.commit_all.count_primary_author }}</td>
-                        <td class="text-center">{{ grades.commit_count_primary_author_all.letter_grade.value }}</td>
-                        <td class="text-center">x {{ grades.commit_count_primary_author_all.weight_str }}</td>
-                    </tr>
+{#                    <tr>#}
+{#                        <td>Author Count</td>#}
+{#                        <td>{{ data.contributor.author_count_all }}</td>#}
+{#                        <td class="text-center">{{ grades.author_count_all.letter_grade.value }}</td>#}
+{#                        <td class="text-center">x {{ grades.author_count_all.weight_str }}</td>#}
+{#                    </tr>#}
+{#                    <tr>#}
+{#                        <td>Primary Author Commit Count</td>#}
+{#                        <td>{{ data.commit_all.count_primary_author }}</td>#}
+{#                        <td class="text-center">{{ grades.commit_count_primary_author_all.letter_grade.value }}</td>#}
+{#                        <td class="text-center">x {{ grades.commit_count_primary_author_all.weight_str }}</td>#}
+{#                    </tr>#}
                     <tr>
                         <td>Days Since Commit</td>
                         <td>{{ data.contributor.days_since_commit }}</td>
                         <td class="text-center">{{ grades.days_since_commit.letter_grade.value }}</td>
                         <td class="text-center">x {{ grades.days_since_commit.weight_str }}</td>
                     </tr>
-                    <tr>
-                        <td>Typical Time Between All Commits</td>
-                        <td>{{ view.commit_interval_days_all }} Days</td>
-                        <td class="text-center">{{ grades.commit_interval_all.letter_grade.value }}</td>
-                        <td class="text-center">x {{ grades.commit_interval_all.weight_str }}</td>
-                    </tr>
+{#                    <tr>#}
+{#                        <td>Typical Time Between All Commits</td>#}
+{#                        <td>{{ view.commit_interval_days_all }} Days</td>#}
+{#                        <td class="text-center">{{ grades.commit_interval_all.letter_grade.value }}</td>#}
+{#                        <td class="text-center">x {{ grades.commit_interval_all.weight_str }}</td>#}
+{#                    </tr>#}
                     <tr>
                         <td>Recent Author Count</td>
                         <td>{{ data.contributor.author_count_recent }}</td>
@@ -127,22 +127,22 @@
                         <td>Branch Count</td>
                         <td>{{ data.contributor.branch_count }}</td>
                     </tr>
-                    <tr>
-                        <td>Lines of Code</td>
-                        <td>{{ data.code.lines_of_code }}</td>
-                    </tr>
-                    <tr>
-                        <td>Total Commits</td>
-                        <td>{{ data.commit_all.count }}</td>
-                    </tr>
+{#                    <tr>#}
+{#                        <td>Lines of Code</td>#}
+{#                        <td>{{ data.code.lines_of_code }}</td>#}
+{#                    </tr>#}
+{#                    <tr>#}
+{#                        <td>Total Commits</td>#}
+{#                        <td>{{ data.commit_all.count }}</td>#}
+{#                    </tr>#}
                     <tr>
                         <td>Recent Commits</td>
                         <td>{{ data.commit_recent.count }}</td>
                     </tr>
-                    <tr>
-                        <td>File Count</td>
-                        <td>{{ data.code.file_count }}</td>
-                    </tr>
+{#                    <tr>#}
+{#                        <td>File Count</td>#}
+{#                        <td>{{ data.code.file_count }}</td>#}
+{#                    </tr>#}
                     <tr>
                         <td>Pull Requests Open</td>
                         <td>{{ data.pull_request.count_open }}</td>

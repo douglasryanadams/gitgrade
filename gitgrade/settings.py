@@ -176,7 +176,7 @@ LOGGING = {
             "propagate": False,
         },
         "git": {"level": "WARNING"},
-        "github": {"level": "WARNING"},
+        "github": {"level": "DEBUG"},
         "urllib3": {"level": "WARNING"},
     },
 }

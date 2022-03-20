@@ -18,7 +18,6 @@ from repo.services.util import get_statistics
 logger = logging.getLogger(__name__)
 
 source_to_base_url = {
-    "bitbucket": "https://bitbucket.org",
     "github": "https://github.com",
 }
 

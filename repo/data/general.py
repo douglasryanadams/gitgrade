@@ -30,5 +30,5 @@ class RepoRequest:
 
 @dataclass
 class ViewOnly:
-    commit_interval_days_all: str
+    # commit_interval_days_all: str
     commit_interval_days_recent: str

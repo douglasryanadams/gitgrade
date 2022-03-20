@@ -1,10 +1,10 @@
 import statistics
-from typing import List
+from typing import List, Union
 
 from repo.data.general import Statistics
 
 
-def get_statistics(data: List[int]) -> Statistics:
+def get_statistics(data: Union[List[int], List[float]]) -> Statistics:
     if len(data) > 1:
         mean = statistics.fmean(data)
         standard_deviation = statistics.stdev(data)

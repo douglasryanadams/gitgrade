@@ -6,7 +6,6 @@ from freezegun import freeze_time
 from repo.data.general import Statistics
 from repo.data.git_data import (
     GitData,
-    CodeData,
     PullRequestData,
     CommitData,
     ContributorData,
@@ -25,22 +24,22 @@ def fake_url_metadata():
 @pytest.fixture
 def fake_git_data():
     return GitData(
-        code=CodeData(
-            lines_of_code=-1,
-            file_count=-1,
-        ),
+        # code=CodeData(
+        #     lines_of_code=-1,
+        #     file_count=-1,
+        # ),
         pull_request=PullRequestData(
             count_open=-1,
             count=-1,
         ),
-        commit_all=CommitData(
-            count=-1,
-            count_primary_author=-1,
-            interval=Statistics(
-                mean=-1,
-                standard_deviation=-1,
-            ),
-        ),
+        # commit_all=CommitData(
+        #     count=-1,
+        #     count_primary_author=-1,
+        #     interval=Statistics(
+        #         mean=-1,
+        #         standard_deviation=-1,
+        #     ),
+        # ),
         commit_recent=CommitData(
             count=-1,
             count_primary_author=-1,
@@ -53,7 +52,7 @@ def fake_git_data():
             days_since_create=-1,
             days_since_commit=-1,
             branch_count=-1,
-            author_count_all=-1,
+            # author_count_all=-1,
             author_count_recent=-1,
         ),
         popularity=PopularityData(

@@ -27,14 +27,14 @@ class CacheDataManager(Manager):
             source=url_metadata.source,
             owner=url_metadata.owner,
             repo=url_metadata.repo,
-            code_lines_of_code=data.code.lines_of_code,
-            code_file_count=data.code.file_count,
+            # code_lines_of_code=data.code.lines_of_code,
+            # code_file_count=data.code.file_count,
             pull_request_count=data.pull_request.count,
             pull_request_count_open=data.pull_request.count_open,
-            commit_all_count=data.commit_all.count,
-            commit_all_count_primary_author=data.commit_all.count_primary_author,
-            commit_all_interval_mean=data.commit_all.interval.mean,
-            commit_all_interval_standard_deviation=data.commit_all.interval.standard_deviation,
+            # commit_all_count=data.commit_all.count,
+            # commit_all_count_primary_author=data.commit_all.count_primary_author,
+            # commit_all_interval_mean=data.commit_all.interval.mean,
+            # commit_all_interval_standard_deviation=data.commit_all.interval.standard_deviation,
             commit_recent_count=data.commit_recent.count,
             commit_recent_count_primary_author=data.commit_recent.count_primary_author,
             commit_recent_interval_mean=data.commit_recent.interval.mean,
@@ -42,7 +42,7 @@ class CacheDataManager(Manager):
             contributor_days_since_create=data.contributor.days_since_create,
             contributor_days_since_commit=data.contributor.days_since_commit,
             contributor_branch_count=data.contributor.branch_count,
-            contributor_author_count_all=data.contributor.author_count_all,
+            # contributor_author_count_all=data.contributor.author_count_all,
             contributor_author_count_recent=data.contributor.author_count_recent,
             popularity_watcher_count=data.popularity.watcher_count,
             popularity_has_issues=data.popularity.has_issues,
@@ -75,16 +75,16 @@ class CacheData(Model):
     repo = CharField(max_length=255)
 
     # Data
-    code_lines_of_code = IntegerField()
-    code_file_count = IntegerField()
+    # code_lines_of_code = IntegerField()
+    # code_file_count = IntegerField()
 
     pull_request_count = IntegerField()
     pull_request_count_open = IntegerField()
 
-    commit_all_count = IntegerField()
-    commit_all_count_primary_author = IntegerField()
-    commit_all_interval_mean = FloatField()
-    commit_all_interval_standard_deviation = FloatField()
+    # commit_all_count = IntegerField()
+    # commit_all_count_primary_author = IntegerField()
+    # commit_all_interval_mean = FloatField()
+    # commit_all_interval_standard_deviation = FloatField()
 
     commit_recent_count = IntegerField()
     commit_recent_count_primary_author = IntegerField()
@@ -94,7 +94,7 @@ class CacheData(Model):
     contributor_days_since_create = IntegerField()
     contributor_days_since_commit = IntegerField()
     contributor_branch_count = IntegerField()
-    contributor_author_count_all = IntegerField()
+    # contributor_author_count_all = IntegerField()
     contributor_author_count_recent = IntegerField()
 
     popularity_watcher_count = IntegerField()

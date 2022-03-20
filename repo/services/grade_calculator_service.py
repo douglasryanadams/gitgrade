@@ -312,19 +312,19 @@ def calculate_grade(data: GitData) -> TestGrades:
         "days_since_create": grade_days_since_create(
             data.contributor.days_since_create
         ),
-        "author_count_all": grade_authors_total(data.contributor.author_count_all),
+        # "author_count_all": grade_authors_total(data.contributor.author_count_all),
         "author_count_recent": grade_authors_recent(
             data.contributor.author_count_recent
         ),
-        "commit_count_primary_author_all": grade_commits_all_by_primary_author(
-            data.commit_all.count,
-            data.commit_all.count_primary_author,
-        ),
+        # "commit_count_primary_author_all": grade_commits_all_by_primary_author(
+        #     data.commit_all.count,
+        #     data.commit_all.count_primary_author,
+        # ),
         "commit_count_primary_author_recent": grade_commits_recent_by_primary_author(
             data.commit_recent.count,
             data.commit_recent.count_primary_author,
         ),
-        "commit_interval_all": grade_commit_interval(data.commit_all.interval),
+        # "commit_interval_all": grade_commit_interval(data.commit_all.interval),
         "commit_interval_recent": grade_commit_interval(data.commit_recent.interval),
     }
 

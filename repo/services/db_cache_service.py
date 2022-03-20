@@ -9,7 +9,6 @@ from repo.data.git_data import (
     GitData,
     CommitData,
     PullRequestData,
-    CodeData,
     ContributorData,
     PopularityData,
 )
@@ -44,22 +43,22 @@ def check_cache(current_version: str, url_metadata: RepoRequest) -> GitData:
         raise CacheMiss()
 
     return GitData(
-        code=CodeData(
-            lines_of_code=found.code_lines_of_code,
-            file_count=found.code_file_count,
-        ),
+        # code=CodeData(
+        #     lines_of_code=found.code_lines_of_code,
+        #     file_count=found.code_file_count,
+        # ),
         pull_request=PullRequestData(
             count_open=found.pull_request_count_open,
             count=found.pull_request_count,
         ),
-        commit_all=CommitData(
-            count=found.commit_all_count,
-            count_primary_author=found.commit_all_count_primary_author,
-            interval=Statistics(
-                mean=found.commit_all_interval_mean,
-                standard_deviation=found.commit_all_interval_standard_deviation,
-            ),
-        ),
+        # commit_all=CommitData(
+        #     count=found.commit_all_count,
+        #     count_primary_author=found.commit_all_count_primary_author,
+        #     interval=Statistics(
+        #         mean=found.commit_all_interval_mean,
+        #         standard_deviation=found.commit_all_interval_standard_deviation,
+        #     ),
+        # ),
         commit_recent=CommitData(
             count=found.commit_recent_count,
             count_primary_author=found.commit_recent_count_primary_author,
@@ -72,7 +71,7 @@ def check_cache(current_version: str, url_metadata: RepoRequest) -> GitData:
             days_since_create=found.contributor_days_since_create,
             days_since_commit=found.contributor_days_since_commit,
             branch_count=found.contributor_branch_count,
-            author_count_all=found.contributor_author_count_all,
+            # author_count_all=found.contributor_author_count_all,
             author_count_recent=found.contributor_author_count_recent,
         ),
         popularity=PopularityData(
@@ -103,18 +102,18 @@ def patch_cache(
         found.repo = url_metadata.repo
 
         # Data
-        found.code_lines_of_code = data.code.lines_of_code
-        found.code_file_count = data.code.file_count
+        # found.code_lines_of_code = data.code.lines_of_code
+        # found.code_file_count = data.code.file_count
 
         found.pull_request_count_open = data.pull_request.count_open
         found.pull_request_count = data.pull_request.count
 
-        found.commit_all_count = data.commit_all.count
-        found.commit_all_count_primary_author = data.commit_all.count_primary_author
-        found.commit_all_interval_mean = data.commit_all.interval.mean
-        found.commit_all_interval_standard_deviation = (
-            data.commit_all.interval.standard_deviation
-        )
+        # found.commit_all_count = data.commit_all.count
+        # found.commit_all_count_primary_author = data.commit_all.count_primary_author
+        # found.commit_all_interval_mean = data.commit_all.interval.mean
+        # found.commit_all_interval_standard_deviation = (
+        #     data.commit_all.interval.standard_deviation
+        # )
 
         found.commit_recent_count = data.commit_recent.count
         found.commit_recent_count_primary_author = (
@@ -128,7 +127,7 @@ def patch_cache(
         found.contributor_days_since_create = data.contributor.days_since_create
         found.contributor_days_since_commit = data.contributor.days_since_commit
         found.contributor_branch_count = data.contributor.branch_count
-        found.contributor_author_count_all = data.contributor.author_count_all
+        # found.contributor_author_count_all = data.contributor.author_count_all
         found.contributor_author_count_recent = data.contributor.author_count_recent
 
         found.popularity_watcher_count = data.popularity.watcher_count

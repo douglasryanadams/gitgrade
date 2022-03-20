@@ -3,11 +3,10 @@ from dataclasses import asdict, dataclass
 from typing import Optional, Dict, Final, Any
 
 from gitgrade.util import get_version
-from repo.data.from_source import DataFromAPI, DataFromClone
+from repo.data.from_source import DataFromAPI
 from repo.data.general import RepoRequest, ViewOnly
 from repo.data.git_data import (
     GitData,
-    CodeData,
     PullRequestData,
     CommitData,
     ContributorData,
@@ -17,8 +16,7 @@ from repo.data.grade import TestGrades
 from repo.services.db_cache_service import check_cache, patch_cache
 from repo.services.errors import CacheMiss, InvalidRequest
 from repo.services.grade_calculator_service import calculate_grade
-from repo.services.local_git_service import fetch_clone_data
-from repo.services.rest_api_service import fetch_api_data
+from repo.services.rest_api_service import fetch_github_api_data
 from repo.services.url_service import identify_source
 
 logger = logging.getLogger(__name__)
@@ -37,32 +35,40 @@ class RepoResult:
     view: ViewOnly
 
 
-def _convert(api_data: DataFromAPI, clone_data: DataFromClone) -> GitData:
+# def _convert(api_data: DataFromAPI, clone_data: DataFromClone) -> GitData:
+def _convert(api_data: DataFromAPI) -> GitData:
+
     return GitData(
-        code=CodeData(
-            lines_of_code=clone_data.lines_of_code,
-            file_count=clone_data.file_count,
-        ),
+        # code=CodeData(
+        #     lines_of_code=clone_data.lines_of_code,
+        #     file_count=clone_data.file_count,
+        # ),
         pull_request=PullRequestData(
             count=api_data.pull_request_count,
             count_open=api_data.pull_request_count_open,
         ),
-        commit_all=CommitData(
-            count=clone_data.time_all.commit_count,
-            count_primary_author=clone_data.time_all.commit_count_primary_author,
-            interval=clone_data.time_all.commit_interval,
-        ),
+        # commit_all=CommitData(
+        #     count=clone_data.time_all.commit_count,
+        #     count_primary_author=clone_data.time_all.commit_count_primary_author,
+        #     interval=clone_data.time_all.commit_interval,
+        # ),
         commit_recent=CommitData(
-            count=clone_data.time_recent.commit_count,
-            count_primary_author=clone_data.time_recent.commit_count_primary_author,
-            interval=clone_data.time_recent.commit_interval,
+            # count=clone_data.time_recent.commit_count,
+            # count_primary_author=clone_data.time_recent.commit_count_primary_author,
+            # interval=clone_data.time_recent.commit_interval,
+            count=api_data.time_recent.commit_count,
+            count_primary_author=api_data.time_recent.commit_count_primary_author,
+            interval=api_data.time_recent.commit_interval,
         ),
         contributor=ContributorData(
             days_since_create=api_data.days_since_create,
-            days_since_commit=clone_data.days_since_commit,
-            branch_count=clone_data.branch_count,
-            author_count_all=clone_data.time_all.author_count,
-            author_count_recent=clone_data.time_recent.author_count,
+            # days_since_commit=clone_data.days_since_commit,
+            # branch_count=clone_data.branch_count,
+            # author_count_all=clone_data.time_all.author_count,
+            # author_count_recent=clone_data.time_recent.author_count,
+            days_since_commit=api_data.days_since_commit,
+            branch_count=api_data.branch_count,
+            author_count_recent=api_data.time_recent.author_count,
         ),
         popularity=PopularityData(
             watcher_count=api_data.watcher_count,
@@ -93,16 +99,16 @@ def repo_input_util(
     except CacheMiss:
         repo_request.sso_token = github_token
 
-        api_data = fetch_api_data(repo_request)
-        clone_data = fetch_clone_data(repo_request)
+        api_data = fetch_github_api_data(repo_request)
+        # clone_data = fetch_clone_data(repo_request)
 
-        git_data = _convert(api_data, clone_data)
+        git_data = _convert(api_data)
         patch_cache(current_version, repo_request, git_data)
 
     test_grades: Final[TestGrades] = calculate_grade(git_data)
 
     view_only = ViewOnly(
-        commit_interval_days_all=f"{test_grades.commit_interval_all.raw_number:.2f}",
+        # commit_interval_days_all=f"{test_grades.commit_interval_all.raw_number:.2f}",
         commit_interval_days_recent=f"{test_grades.commit_interval_recent.raw_number:.2f}",
     )
 

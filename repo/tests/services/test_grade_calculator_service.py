@@ -5,7 +5,6 @@ import pytest
 from repo.data.general import Statistics, SECONDS_IN_DAY
 from repo.data.git_data import (
     GitData,
-    CodeData,
     PullRequestData,
     CommitData,
     ContributorData,
@@ -18,22 +17,22 @@ from repo.services.grade_calculator_service import calculate_grade
 @pytest.fixture
 def base_git_data():
     return GitData(
-        code=CodeData(
-            lines_of_code=10_000,
-            file_count=5000,  # Average file 200 lines long,
-        ),
+        # code=CodeData(
+        #     lines_of_code=10_000,
+        #     file_count=5000,  # Average file 200 lines long,
+        # ),
         pull_request=PullRequestData(
             count=52 * 10,  # One per week for 10 years
             count_open=0,
         ),
-        commit_all=CommitData(
-            count=52 * 3 * 10,  # Three per week for 10 years
-            count_primary_author=52 * 3 * 10,
-            interval=Statistics(
-                mean=SECONDS_IN_DAY * 5,
-                standard_deviation=SECONDS_IN_DAY,
-            ),
-        ),
+        # commit_all=CommitData(
+        #     count=52 * 3 * 10,  # Three per week for 10 years
+        #     count_primary_author=52 * 3 * 10,
+        #     interval=Statistics(
+        #         mean=SECONDS_IN_DAY * 5,
+        #         standard_deviation=SECONDS_IN_DAY,
+        #     ),
+        # ),
         commit_recent=CommitData(
             count=6 * 4 * 3,  # 3 per week for 6 months
             count_primary_author=6 * 4 * 3,
@@ -46,7 +45,7 @@ def base_git_data():
             days_since_create=365 * 10,
             days_since_commit=0,
             branch_count=-1,  # Doesn't Matter Yet
-            author_count_all=100,
+            # author_count_all=100,
             author_count_recent=100,
         ),
         popularity=PopularityData(
@@ -65,13 +64,13 @@ def test_grade_a(base_git_data: GitData):
     base_git_data.contributor.author_count_all = 30
     base_git_data.contributor.author_count_recent = 10
 
-    base_git_data.commit_all.count_primary_author = int(52 * 3 * 10 * 0.30)
+    # base_git_data.commit_all.count_primary_author = int(52 * 3 * 10 * 0.30)
     base_git_data.commit_recent.count_primary_author = int(6 * 4 * 3 * 0.50)
 
-    base_git_data.commit_all.interval = Statistics(
-        mean=SECONDS_IN_DAY * 10,
-        standard_deviation=SECONDS_IN_DAY,
-    )
+    # base_git_data.commit_all.interval = Statistics(
+    #     mean=SECONDS_IN_DAY * 10,
+    #     standard_deviation=SECONDS_IN_DAY,
+    # )
     base_git_data.commit_recent.interval = Statistics(
         mean=SECONDS_IN_DAY * 10,
         standard_deviation=SECONDS_IN_DAY,
@@ -86,13 +85,13 @@ def test_grade_b(base_git_data: GitData):
     base_git_data.contributor.author_count_all = 15
     base_git_data.contributor.author_count_recent = 7
 
-    base_git_data.commit_all.count_primary_author = int(52 * 3 * 10 * 0.15)
+    # base_git_data.commit_all.count_primary_author = int(52 * 3 * 10 * 0.15)
     base_git_data.commit_recent.count_primary_author = int(6 * 4 * 3 * 0.30)
 
-    base_git_data.commit_all.interval = Statistics(
-        mean=SECONDS_IN_DAY * 20,
-        standard_deviation=SECONDS_IN_DAY * 5,
-    )
+    # base_git_data.commit_all.interval = Statistics(
+    #     mean=SECONDS_IN_DAY * 20,
+    #     standard_deviation=SECONDS_IN_DAY * 5,
+    # )
     base_git_data.commit_recent.interval = Statistics(
         mean=SECONDS_IN_DAY * 20,
         standard_deviation=SECONDS_IN_DAY * 5,
@@ -107,13 +106,13 @@ def test_grade_c(base_git_data: GitData):
     base_git_data.contributor.author_count_all = 5
     base_git_data.contributor.author_count_recent = 4
 
-    base_git_data.commit_all.count_primary_author = int(52 * 3 * 10 * 0.08)
+    # base_git_data.commit_all.count_primary_author = int(52 * 3 * 10 * 0.08)
     base_git_data.commit_recent.count_primary_author = int(6 * 4 * 3 * 0.15)
 
-    base_git_data.commit_all.interval = Statistics(
-        mean=SECONDS_IN_DAY * 40,
-        standard_deviation=SECONDS_IN_DAY * 10,
-    )
+    # base_git_data.commit_all.interval = Statistics(
+    #     mean=SECONDS_IN_DAY * 40,
+    #     standard_deviation=SECONDS_IN_DAY * 10,
+    # )
     base_git_data.commit_recent.interval = Statistics(
         mean=SECONDS_IN_DAY * 40,
         standard_deviation=SECONDS_IN_DAY * 10,
@@ -128,13 +127,13 @@ def test_grade_d(base_git_data: GitData):
     base_git_data.contributor.author_count_all = 2
     base_git_data.contributor.author_count_recent = 2
 
-    base_git_data.commit_all.count_primary_author = int(52 * 3 * 10 * 0.04)
+    # base_git_data.commit_all.count_primary_author = int(52 * 3 * 10 * 0.04)
     base_git_data.commit_recent.count_primary_author = int(6 * 4 * 3 * 0.08)
 
-    base_git_data.commit_all.interval = Statistics(
-        mean=SECONDS_IN_DAY * 75,
-        standard_deviation=SECONDS_IN_DAY * 10,
-    )
+    # base_git_data.commit_all.interval = Statistics(
+    #     mean=SECONDS_IN_DAY * 75,
+    #     standard_deviation=SECONDS_IN_DAY * 10,
+    # )
     base_git_data.commit_recent.interval = Statistics(
         mean=SECONDS_IN_DAY * 75,
         standard_deviation=SECONDS_IN_DAY * 10,
@@ -149,13 +148,13 @@ def test_grade_f(base_git_data: GitData):
     base_git_data.contributor.author_count_all = 1
     base_git_data.contributor.author_count_recent = 0
 
-    base_git_data.commit_all.count_primary_author = int(52 * 3 * 10 * 0.02)
+    # base_git_data.commit_all.count_primary_author = int(52 * 3 * 10 * 0.02)
     base_git_data.commit_recent.count_primary_author = int(6 * 4 * 3 * 0.04)
 
-    base_git_data.commit_all.interval = Statistics(
-        mean=SECONDS_IN_DAY * 100,
-        standard_deviation=SECONDS_IN_DAY * 25,
-    )
+    # base_git_data.commit_all.interval = Statistics(
+    #     mean=SECONDS_IN_DAY * 100,
+    #     standard_deviation=SECONDS_IN_DAY * 25,
+    # )
     base_git_data.commit_recent.interval = Statistics(
         mean=SECONDS_IN_DAY * 100,
         standard_deviation=SECONDS_IN_DAY * 25,

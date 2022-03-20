@@ -1,104 +1,71 @@
 import logging
-from datetime import datetime
-from typing import Dict, Any, Tuple, cast
+from datetime import datetime, timedelta
+from typing import List, Dict
 
-import requests
 from github import Github
+from github.Commit import Commit
+from github.PaginatedList import PaginatedList
 
-from repo.data.from_source import DataFromAPI
-from repo.data.general import RepoRequest
+from repo.data.from_source import DataFromAPI, TimeData
+from repo.data.general import RepoRequest, Statistics
+from repo.services.util import get_statistics
 
 logger = logging.getLogger(__name__)
 
 BITBUCKET_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f%z"
 
 
-def _calculate_date_deltas(repo_json: Dict[str, Any]) -> Tuple[int, int]:
-    logger.debug("  calculating date deltas")
-    today = datetime.today()
-    updated_on = repo_json.get("updated_on")
-    created_on = repo_json.get("created_on")
+def _get_commit_data(
+    commits: PaginatedList,  # type: ignore  # mypy wants PaginatedList[Commit] but pylint and python don't like it
+) -> TimeData:
+    logger.info("Getting commit data from APIs")
+    deltas: List[float] = []
+    previous_date = None
+    commit_count = 0
+    commits_by_author: Dict[str, int] = {}
+    popular_author_count = 0
 
-    if updated_on:
-        last_update = datetime.strptime(updated_on, BITBUCKET_DATETIME_FORMAT)
-        update_delta = today.date() - last_update.date()
-        days_since_update = update_delta.days
+    for commit in commits:
+        commit_count += 1
+        commit_author = commit.commit.author
+        logger.debug("  author: %s", commit_author.name)
+        commits_this_author = commits_by_author.get(commit_author.name, 0) + 1
+        commits_by_author[commit_author.name] = commits_this_author
+        logger.debug("  commits so far: %s", commits_this_author)
+
+        if commits_this_author > popular_author_count:
+            popular_author_count = commits_this_author
+
+        commit_date = commit_author.date
+        logger.debug("  commit date: %s", commit_date)
+        if previous_date is None:
+            previous_date = commit_date
+            continue
+
+        deltas.append((previous_date - commit_date).total_seconds())
+        previous_date = commit_date
+
+    if deltas:
+        commit_stats = get_statistics(deltas)
     else:
-        days_since_update = -1
+        commit_stats = Statistics(mean=0, standard_deviation=0)
 
-    if created_on:
-        first_update = datetime.strptime(created_on, BITBUCKET_DATETIME_FORMAT)
-        create_delta = today.date() - first_update.date()
-        days_since_create = create_delta.days
-    else:
-        days_since_create = -1
-
-    logger.debug("  days_since_create: %s", days_since_create)
-    logger.debug("  days_since_update: %s", days_since_update)
-    return days_since_create, days_since_update
-
-
-def _get_pull_request_counts(repo_url: str) -> Tuple[int, int]:
-    logger.debug("  calculating pull request count")
-    pulls_url = f"{repo_url}/pullrequests"
-    logger.debug("  making request to: %s", pulls_url)
-
-    params_open_only = [("state", "OPEN")]
-    pulls_open = requests.get(pulls_url, params=params_open_only)
-    pulls_open_json = pulls_open.json()
-
-    params_all = [("state", "OPEN"), ("state", "MERGED"), ("state", "SUPERSEDED")]
-    pulls_all = requests.get(pulls_url, params=params_all)
-    pulls_all_json = pulls_all.json()
-
-    return pulls_all_json.get("size", -1), pulls_open_json.get("size", -1)
-
-
-def _get_watcher_count(repo_url: str) -> int:
-    logger.debug("  calculating watcher count")
-    watchers_url = f"{repo_url}/watchers"
-    logger.debug("  making request to: %s", watchers_url)
-    watchers = requests.get(watchers_url)
-    watchers_json = watchers.json()
-
-    return cast(int, watchers_json.get("size", -1))
-
-
-def _fetch_bitbucket_api_data(url_data: RepoRequest) -> DataFromAPI:
-    # 1 Call Each:
-    # Repo itself - 1
-    # Watchers - 1
-    # Pull Requests (open and total) - 2
-
-    logger.debug("  fetching data from bitbucket for: %s", url_data)
-    repo_url = (
-        f"https://api.bitbucket.org/2.0/repositories/{url_data.owner}/{url_data.repo}"
-    )
-    logger.debug("  bitbucket repo_url: %s", repo_url)
-    repo = requests.get(repo_url)
-    repo_json = repo.json()
-
-    days_since_create, days_since_update = _calculate_date_deltas(repo_json)
-
-    watchers_count = _get_watcher_count(repo_url)
-
-    pulls_all_count, pulls_open_count = _get_pull_request_counts(repo_url)
-
-    return DataFromAPI(
-        days_since_update=days_since_update,
-        days_since_create=days_since_create,
-        watcher_count=watchers_count,
-        pull_request_count_open=pulls_open_count,
-        pull_request_count=pulls_all_count,
-        has_issues=repo_json.get("has_issues", False),
-        open_issue_count=-1,
+    return TimeData(
+        commit_count=commit_count,
+        commit_count_primary_author=popular_author_count,
+        commit_interval=commit_stats,
+        author_count=len(commits_by_author),
     )
 
 
-def _fetch_github_api_data(repo_request_data: RepoRequest) -> DataFromAPI:
-    # Calls:
-    # Repo itself - 1
-    # Pull Requests (open and total) - 2
+def _get_days_since_last_commit(commit: Commit) -> int:
+    logger.info("  getting days since last commit")
+    latest_commit = commit.commit.author.date
+    since_last_commit = datetime.today() - latest_commit
+    return since_last_commit.days
+
+
+def fetch_github_api_data(repo_request_data: RepoRequest) -> DataFromAPI:
     logger.debug("  fetching data from github for: %s", repo_request_data)
     github_client = Github(login_or_token=repo_request_data.sso_token)
     repo = github_client.get_repo(f"{repo_request_data.owner}/{repo_request_data.repo}")
@@ -114,6 +81,14 @@ def _fetch_github_api_data(repo_request_data: RepoRequest) -> DataFromAPI:
     open_pulls = repo.get_pulls(state="open")
     all_pulls = repo.get_pulls(state="all")
 
+    six_months_ago = datetime.today() - timedelta(days=182)
+    recent_commits = repo.get_commits(since=six_months_ago)
+    time_data_recent = _get_commit_data(recent_commits)
+
+    days_since_last_commit = _get_days_since_last_commit(recent_commits[0])
+
+    branch_count = repo.get_branches().totalCount
+
     return DataFromAPI(
         days_since_update=days_since_update,
         days_since_create=days_since_create,
@@ -122,18 +97,7 @@ def _fetch_github_api_data(repo_request_data: RepoRequest) -> DataFromAPI:
         pull_request_count=all_pulls.totalCount,
         has_issues=repo.has_issues,
         open_issue_count=repo.open_issues_count,
+        days_since_commit=days_since_last_commit,
+        branch_count=branch_count,
+        time_recent=time_data_recent,
     )
-
-
-fetch_source_map = {
-    "bitbucket": _fetch_bitbucket_api_data,
-    "github": _fetch_github_api_data,
-}
-
-
-def fetch_api_data(url_data: RepoRequest) -> DataFromAPI:
-    """
-    Make API calls required to get data from APIs
-    """
-    logger.info("Fetching data from APIs: %s", url_data)
-    return fetch_source_map[url_data.source](url_data)

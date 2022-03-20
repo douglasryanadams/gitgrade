@@ -27,7 +27,7 @@ class ContributorData:
     days_since_create: int
     days_since_commit: int
     branch_count: int
-    author_count_all: int
+    # author_count_all: int
     author_count_recent: int
 
 
@@ -45,9 +45,9 @@ class GitData:
     for grade calculations
     """
 
-    code: CodeData
+    # code: CodeData
     pull_request: PullRequestData
-    commit_all: CommitData
+    # commit_all: CommitData
     commit_recent: CommitData
     contributor: ContributorData
     popularity: PopularityData

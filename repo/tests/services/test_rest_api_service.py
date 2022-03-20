@@ -1,81 +1,33 @@
 # pylint: disable=redefined-outer-name, unused-argument, missing-function-docstring,
 
-import copy
 from datetime import datetime
-from typing import Generator
+from typing import Generator, List
 from unittest.mock import patch, Mock
 
 import pytest
 from freezegun import freeze_time
 
-from repo.data.from_source import DataFromAPI
-from repo.data.general import RepoRequest
+from repo.data.from_source import DataFromAPI, TimeData
+from repo.data.general import RepoRequest, Statistics, SECONDS_IN_DAY
 
-from repo.services.rest_api_service import (
-    _fetch_bitbucket_api_data,
-    _fetch_github_api_data,
-)
-from repo.tests import bitbucket_objects
+from repo.services.rest_api_service import fetch_github_api_data
 
 
 @pytest.fixture
-def patch_bitbucket_requests() -> Generator[Mock, None, None]:
-    """
-    Stubs out responses for bitbucket calls to avoid real network calls
-    """
-    with patch("repo.services.rest_api_service.requests") as mock_requests:
-        mock_repo_response = Mock()
-        mock_repo_response.json.return_value = copy.deepcopy(bitbucket_objects.REPO)
-
-        mock_watchers_response = Mock()
-        mock_watchers_response.json.return_value = copy.deepcopy(
-            bitbucket_objects.WATCHERS
-        )
-
-        mock_open_prs_response = Mock()
-        mock_open_prs_response.json.return_value = copy.deepcopy(
-            bitbucket_objects.OPEN_PRS
-        )
-
-        mock_all_prs_response = Mock()
-        mock_all_prs_response.json.return_value = copy.deepcopy(
-            bitbucket_objects.ALL_PRS
-        )
-
-        mock_requests.get.side_effect = [
-            mock_repo_response,
-            mock_watchers_response,
-            mock_open_prs_response,
-            mock_all_prs_response,
-        ]
-        yield mock_requests
-
-
-@freeze_time("2022-01-30")
-def test_fetch_bitbucket(patch_bitbucket_requests: Mock) -> None:  # pylint: disable=W
-    """
-    Tests that we parse some sample data successfully
-
-    Note: Careful running this w/o mock data, Bitbucket has very low rate limits
-    """
-    source = RepoRequest(
-        source="bitbucket", owner="atlassian", repo="bamboo-tomcat-plugin"
-    )
-    actual = _fetch_bitbucket_api_data(source)
-    expected = DataFromAPI(
-        days_since_update=307,
-        days_since_create=663,
-        watcher_count=2,
-        pull_request_count_open=0,
-        pull_request_count=1,
-        has_issues=False,
-        open_issue_count=-1,
-    )
-    assert actual == expected
+def mock_commits() -> List[Mock]:
+    commits = []
+    for i in range(10):
+        mock_commit = Mock()
+        commits.append(mock_commit)
+        mock_author = Mock()
+        mock_author.name = "userA"
+        mock_author.date = datetime(2022, 1, 10 - i)  # one commit per day
+        mock_commit.commit.author = mock_author
+    return commits
 
 
 @pytest.fixture
-def patch_github_client() -> Generator[Mock, None, None]:
+def patch_github_client(mock_commits) -> Generator[Mock, None, None]:
     with patch("repo.services.rest_api_service.Github") as mock_constructor:
         mock_client = Mock()
         mock_constructor.return_value = mock_client
@@ -97,13 +49,18 @@ def patch_github_client() -> Generator[Mock, None, None]:
 
         mock_client.get_repo.return_value = mock_repo
 
+        mock_repo.get_commits.return_value = mock_commits
+        mock_branches_response = Mock()
+        mock_branches_response.totalCount = 2
+        mock_repo.get_branches.return_value = mock_branches_response
+
         yield mock_constructor
 
 
 @freeze_time("2022-01-30")
 def test_fetch_github(patch_github_client: Mock) -> None:
     source = RepoRequest(source="github", owner="git", repo="git")
-    actual = _fetch_github_api_data(source)
+    actual = fetch_github_api_data(source)
     expected = DataFromAPI(
         days_since_update=14,
         days_since_create=4939,
@@ -112,5 +69,15 @@ def test_fetch_github(patch_github_client: Mock) -> None:
         pull_request_count=1016,
         has_issues=False,
         open_issue_count=93,
+        days_since_commit=20,
+        branch_count=2,
+        time_recent=TimeData(
+            commit_count=10,
+            commit_count_primary_author=10,
+            commit_interval=Statistics(
+                mean=float(SECONDS_IN_DAY), standard_deviation=0.0
+            ),
+            author_count=1,
+        ),
     )
     assert actual == expected
