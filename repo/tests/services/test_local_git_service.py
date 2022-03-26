@@ -29,18 +29,14 @@ def mock_shutil() -> Generator[Mock, None, None]:
 @pytest.fixture
 def mock_commit() -> Generator[Mock, None, None]:
     commit = Mock()
-    commit.committed_date = int(
-        (datetime(2022, 1, 20) - datetime(1970, 1, 1)).total_seconds()
-    )
+    commit.committed_date = int((datetime(2022, 1, 20) - datetime(1970, 1, 1)).total_seconds())
     return commit
 
 
 @pytest.fixture
 def mock_commit_list() -> Generator[List[Mock], None, None]:
     commits = []
-    rolling_seconds = int(
-        (datetime(2022, 1, 20) - datetime(1970, 1, 1)).total_seconds()
-    )
+    rolling_seconds = int((datetime(2022, 1, 20) - datetime(1970, 1, 1)).total_seconds())
     for _ in range(10):
         new_seconds = rolling_seconds - (60 * 60 * 24)  # a day
         commit = Mock()
@@ -59,10 +55,7 @@ def mock_gitpython(mock_commit, mock_commit_list) -> Generator[Mock, None, None]
 
         repo.remotes = {"origin": Mock()}
 
-        repo.git.ls_remote.return_value = (
-            "b56bd95bbc8f716cb8cbb5fdc18b9b0f00323c6a\trefs/heads/master\n"
-            "b56bd95bbc8f716cb8cbb5fdc18b9b0f00323c6a\trefs/heads/main"
-        )
+        repo.git.ls_remote.return_value = "b56bd95bbc8f716cb8cbb5fdc18b9b0f00323c6a\trefs/heads/master\nb56bd95bbc8f716cb8cbb5fdc18b9b0f00323c6a\trefs/heads/main"
         repo.git.shortlog.side_effect = [
             " 400\tAuthor Alpha\n 25\tAuthor Beta\n 25\tAuthor Gamma\n 25\tAuthor Delta\n 25\tAuthor Epsilon",
             " 80\tAuthor Alpha\n 20\tAuthor Beta",
@@ -88,9 +81,7 @@ def mock_subprocess() -> Generator[Mock, None, None]:
 
 
 @freeze_time("2022-01-30")
-def test_fetch_local_data(
-    mock_os: Mock, mock_shutil: Mock, mock_gitpython: Mock, mock_subprocess: Mock
-) -> None:
+def test_fetch_local_data(mock_os: Mock, mock_shutil: Mock, mock_gitpython: Mock, mock_subprocess: Mock) -> None:
     url_data = RepoRequest(source="github", owner="git", repo="git")
     actual = fetch_clone_data(url_data)
 

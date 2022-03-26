@@ -8,12 +8,13 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.10"
 Django = "^4.0.1"
-PyGithub = "^1.55"
 GitPython = "^3.1.26"
 django-bootstrap-v5 = "^1.0.11"
 uWSGI = "^2.0.20"
 psycopg2 = "^2.9.3"
 packaging = "^21.3"
+aiohttp = "^3.8.1"
+certifi = "^2021.10.8"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0.1"
@@ -22,13 +23,19 @@ mypy = "^0.931"
 black = "^22.1.0"
 django-stubs = "^1.9.0"
 safety = "^1.10.3"
-freezegun = "^1.1.0"
+freezegun = "1.0.*,"  # 1.1.0 bug: https://github.com/spulec/freezegun/issues/437
 types-requests = "^2.27.10"
 types-freezegun = "^1.1.6"
 liccheck = "^0.6.5"
 pytest-django = "^4.5.2"
 pylint-django = "^2.5.2"
 yamllint = "^1.26.3"
+pytest-asyncio = "^0.18.2"
+pytest-aiohttp = "^1.0.4"
+pytest-mock = "^3.7.0"
+
+[tool.black]
+line-length = 180
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

@@ -44,13 +44,10 @@ def base_git_data():
         contributor=ContributorData(
             days_since_create=365 * 10,
             days_since_commit=0,
-            branch_count=-1,  # Doesn't Matter Yet
             # author_count_all=100,
             author_count_recent=100,
         ),
-        popularity=PopularityData(
-            watcher_count=100, has_issues=True, open_issue_count=0
-        ),
+        popularity=PopularityData(watcher_count=100, open_issue_count=0),
     )
 
 

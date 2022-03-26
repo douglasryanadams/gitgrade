@@ -34,9 +34,7 @@ class DataFromAPI:
     watcher_count: int
     pull_request_count_open: int
     pull_request_count: int
-    has_issues: bool
     open_issue_count: int
 
     days_since_commit: int
-    branch_count: int
     time_recent: TimeData

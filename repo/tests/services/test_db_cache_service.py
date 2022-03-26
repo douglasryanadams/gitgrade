@@ -13,7 +13,7 @@ from repo.data.git_data import (
 )
 from repo.services.db_cache_service import patch_cache, check_cache
 from repo.services.errors import CacheMiss
-from repo.services.repo_input_service import RepoRequest
+from repo.services.input_service import RepoRequest
 
 
 @pytest.fixture
@@ -51,13 +51,10 @@ def fake_git_data():
         contributor=ContributorData(
             days_since_create=-1,
             days_since_commit=-1,
-            branch_count=-1,
             # author_count_all=-1,
             author_count_recent=-1,
         ),
-        popularity=PopularityData(
-            watcher_count=-1, has_issues=False, open_issue_count=-1
-        ),
+        popularity=PopularityData(watcher_count=-1, open_issue_count=-1),
     )
 
 

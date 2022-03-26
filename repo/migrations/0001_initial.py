@@ -45,8 +45,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name="gitrepodata",
-            constraint=models.UniqueConstraint(
-                fields=("source", "owner", "repo"), name="unique_repo"
-            ),
+            constraint=models.UniqueConstraint(fields=("source", "owner", "repo"), name="unique_repo"),
         ),
     ]

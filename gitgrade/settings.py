@@ -83,9 +83,7 @@ DATABASE_PASSWORD = os.environ.get("DATABASE_PASSWORD", "invalid_default")
 DATABASE_HOST = os.environ.get("DATABASE_HOST", "database")
 
 if not DEBUG and "invalid_default" in (DATABASE_USERNAME, DATABASE_PASSWORD):
-    raise Exception(
-        "DATABASE_USERNAME and DATABASE_PASSWORD required when not in DEBUG mode."
-    )
+    raise Exception("DATABASE_USERNAME and DATABASE_PASSWORD required when not in DEBUG mode.")
 
 TEST_DATABASE = {
     "ENGINE": "django.db.backends.sqlite3",
@@ -176,7 +174,7 @@ LOGGING = {
             "propagate": False,
         },
         "git": {"level": "WARNING"},
-        "github": {"level": "DEBUG"},
+        "github": {"level": "WARNING"},
         "urllib3": {"level": "WARNING"},
     },
 }

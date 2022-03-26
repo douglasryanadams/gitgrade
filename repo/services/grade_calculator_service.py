@@ -172,9 +172,7 @@ def grade_authors_recent(authors_recent: int) -> TestGrade:
     )
 
 
-def grade_commits_all_by_primary_author(
-    total_commits: int, primary_author_commits: int
-) -> TestGrade:
+def grade_commits_all_by_primary_author(total_commits: int, primary_author_commits: int) -> TestGrade:
     """
     Scores repo based percentage of contributions from single author
     Encourages having a leader for the project
@@ -215,9 +213,7 @@ def grade_commits_all_by_primary_author(
     )
 
 
-def grade_commits_recent_by_primary_author(
-    total_commits: int, primary_author_commits: int
-) -> TestGrade:
+def grade_commits_recent_by_primary_author(total_commits: int, primary_author_commits: int) -> TestGrade:
     """
     Scores repo based percentage of contributions from single author
     Encourages having a leader for the project
@@ -306,16 +302,10 @@ def calculate_grade(data: GitData) -> TestGrades:
     logger.debug("  data: %s", data)
 
     test_grades = {
-        "days_since_commit": grade_days_since_commit(
-            data.contributor.days_since_commit
-        ),
-        "days_since_create": grade_days_since_create(
-            data.contributor.days_since_create
-        ),
+        "days_since_commit": grade_days_since_commit(data.contributor.days_since_commit),
+        "days_since_create": grade_days_since_create(data.contributor.days_since_create),
         # "author_count_all": grade_authors_total(data.contributor.author_count_all),
-        "author_count_recent": grade_authors_recent(
-            data.contributor.author_count_recent
-        ),
+        "author_count_recent": grade_authors_recent(data.contributor.author_count_recent),
         # "commit_count_primary_author_all": grade_commits_all_by_primary_author(
         #     data.commit_all.count,
         #     data.commit_all.count_primary_author,

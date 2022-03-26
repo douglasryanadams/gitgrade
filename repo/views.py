@@ -11,7 +11,7 @@ from django.http import (
 )
 
 from .forms import RepoForm
-from .services.repo_input_service import repo_input_util
+from .services.input_service import input_util
 
 logger = logging.getLogger(__name__)
 
@@ -37,13 +37,9 @@ def repo_grade(
         form = RepoForm(request.POST)
         if form.is_valid():
             repo_url = form.cleaned_data["repo_url"]
-            response_json = repo_input_util(
-                repo_url=repo_url, github_token=github_token
-            )
+            response_json = input_util(repo_url=repo_url, github_token=github_token)
     elif request.method == "GET":
-        response_json = repo_input_util(
-            source=source, owner=owner, repo=repo, github_token=github_token
-        )
+        response_json = input_util(source=source, owner=owner, repo=repo, github_token=github_token)
     else:
         return HttpResponseNotAllowed(permitted_methods=["POST", "GET"])
 

@@ -63,9 +63,7 @@ def _get_authors_commits(repo: Repo, recent: Optional[bool] = False) -> AuthorCo
     recent_date_str = recent_date.strftime("%Y-%m-%d")
 
     if recent:
-        author_data = repo.git.shortlog(
-            repo.active_branch, numbered=True, summary=True, since=recent_date_str
-        )
+        author_data = repo.git.shortlog(repo.active_branch, numbered=True, summary=True, since=recent_date_str)
     else:
         author_data = repo.git.shortlog(repo.active_branch, numbered=True, summary=True)
 
@@ -80,9 +78,7 @@ def _get_authors_commits(repo: Repo, recent: Optional[bool] = False) -> AuthorCo
     logger.debug("  authors_count (recent=%s) : %s", recent, authors_count)
     logger.debug("  commit_count (recent=%s) : %s", recent, commit_count)
 
-    commit_count_primary_author = (
-        _get_count_from_line(author_data_list[0]) if author_data_list else 0
-    )
+    commit_count_primary_author = _get_count_from_line(author_data_list[0]) if author_data_list else 0
 
     return AuthorCommits(
         author_count=authors_count,
@@ -100,9 +96,7 @@ def _get_days_since_last_commit(repo: Repo) -> int:
     return since_last_commit.days
 
 
-def _get_commit_interval_stats(
-    repo: Repo, recent: Optional[bool] = False
-) -> Statistics:
+def _get_commit_interval_stats(repo: Repo, recent: Optional[bool] = False) -> Statistics:
     """
     Returns statistics on the interval between commits
     """
@@ -153,9 +147,7 @@ def fetch_clone_data(url_data: RepoRequest) -> DataFromClone:
         try:
             subprocess.run(["cloc", "--version"], check=True)
         except subprocess.CalledProcessError as error:
-            raise ClocMissingError(
-                "Please install cloc, it's required for understanding the size of the codebase."
-            ) from error
+            raise ClocMissingError("Please install cloc, it's required for understanding the size of the codebase.") from error
 
         cloc_command = ["cloc", "--quiet", "--json", directory_path]
         logger.debug("  running command: %s", cloc_command)

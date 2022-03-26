@@ -22,9 +22,7 @@ from repo.services.url_service import identify_source
         ),
         (
             "https://bitbucket.org/atlassian/bamboo-tomcat-plugin/src/master/",
-            RepoRequest(
-                source="bitbucket", owner="atlassian", repo="bamboo-tomcat-plugin"
-            ),
+            RepoRequest(source="bitbucket", owner="atlassian", repo="bamboo-tomcat-plugin"),
         ),
         (
             "https://bitbucket.org/schae/test-test-test/src/master/",

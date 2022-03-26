@@ -16,7 +16,7 @@ test_integration:
 
 lint:
 	poetry run black ./gitgrade ./repo
-	poetry run mypy --strict ./
+	poetry run mypy --strict --show-error-codes ./
 	$(DJANGO_SETTINGS) poetry run pylint --load-plugins pylint_django ./gitgrade ./repo
 	hadolint Dockerfile
 	poetry run yamllint docker-compose.yml

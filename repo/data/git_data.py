@@ -26,7 +26,6 @@ class CommitData:
 class ContributorData:
     days_since_create: int
     days_since_commit: int
-    branch_count: int
     # author_count_all: int
     author_count_recent: int
 
@@ -34,7 +33,6 @@ class ContributorData:
 @dataclass
 class PopularityData:
     watcher_count: int
-    has_issues: bool
     open_issue_count: int
 
 

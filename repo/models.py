@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 from typing import Any, Tuple
 
 from django.db.models import (
@@ -5,7 +6,6 @@ from django.db.models import (
     CharField,
     IntegerField,
     DateField,
-    BooleanField,
     Manager,
     UniqueConstraint,
     FloatField,
@@ -19,9 +19,7 @@ class CacheDataManager(Manager):
     def get_by_natural_key(self, source: str, owner: str, repo: str) -> Any:
         return self.get(source=source, owner=owner, repo=repo)
 
-    def create_git_repo_data(
-        self, version: str, url_metadata: RepoRequest, data: GitData
-    ):
+    def create_git_repo_data(self, version: str, url_metadata: RepoRequest, data: GitData):
         git_repo_data = self.create(
             version=version,
             source=url_metadata.source,
@@ -41,11 +39,9 @@ class CacheDataManager(Manager):
             commit_recent_interval_standard_deviation=data.commit_recent.interval.standard_deviation,
             contributor_days_since_create=data.contributor.days_since_create,
             contributor_days_since_commit=data.contributor.days_since_commit,
-            contributor_branch_count=data.contributor.branch_count,
             # contributor_author_count_all=data.contributor.author_count_all,
             contributor_author_count_recent=data.contributor.author_count_recent,
             popularity_watcher_count=data.popularity.watcher_count,
-            popularity_has_issues=data.popularity.has_issues,
             popularity_open_issue_count=data.popularity.open_issue_count,
         )
 
@@ -93,21 +89,17 @@ class CacheData(Model):
 
     contributor_days_since_create = IntegerField()
     contributor_days_since_commit = IntegerField()
-    contributor_branch_count = IntegerField()
     # contributor_author_count_all = IntegerField()
     contributor_author_count_recent = IntegerField()
 
     popularity_watcher_count = IntegerField()
-    popularity_has_issues = BooleanField()
     popularity_open_issue_count = IntegerField()
 
     objects = CacheDataManager()
 
     class Meta:
         #  pylint: disable=too-few-public-methods
-        constraints = [
-            UniqueConstraint(fields=["source", "owner", "repo"], name="unique_repo")
-        ]
+        constraints = [UniqueConstraint(fields=["source", "owner", "repo"], name="unique_repo")]
 
     def natural_key(self) -> Tuple[str, str, str]:
         return self.source, self.owner, self.repo

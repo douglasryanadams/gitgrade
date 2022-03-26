@@ -3,7 +3,7 @@ import logging
 import pytest
 
 from repo.data.grade import Grade
-from repo.services.repo_input_service import repo_input_util
+from repo.services.input_service import input_util
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +38,6 @@ def test_baselines(
     Finally, this test will encourage optimizing the evaluation speed of repos because
     we're doing a few "for real."
     """
-    response_json = repo_input_util(url)
+    response_json = input_util(url)
     logger.debug("response_json=%s", response_json)
     assert response_json["grades"]["final_grade"]["letter_grade"] == expected_grade
