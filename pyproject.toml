@@ -15,6 +15,7 @@ psycopg2 = "^2.9.3"
 packaging = "^21.3"
 aiohttp = "^3.8.1"
 certifi = "^2021.10.8"
+requests = "^2.27.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^7.0.1"
