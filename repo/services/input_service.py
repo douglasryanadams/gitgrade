@@ -1,8 +1,10 @@
 import logging
 from dataclasses import asdict, dataclass
-from typing import Optional, Dict, Final, Any
+from typing import Optional, Dict, Final, Any, Literal
 
+from aiohttp import ClientResponseError, ClientError
 from asgiref.sync import async_to_sync
+from django.core.exceptions import ValidationError
 
 from gitgrade.util import get_version
 from repo.data.from_source import DataFromAPI
@@ -16,7 +18,7 @@ from repo.data.git_data import (
 )
 from repo.data.grade import TestGrades
 from repo.services.db_cache_service import check_cache, patch_cache
-from repo.services.errors import CacheMiss, InvalidRequest
+from repo.services.errors import CacheMiss, UnsupportedURL
 from repo.services.grade_calculator_service import calculate_grade
 from repo.services.rest_api_service_async import (
     fetch_github_api_data as fetch_github_api_data_async,
@@ -33,15 +35,21 @@ class RepoResult:
     result view.
     """
 
+    status: Literal["success"]
     request: RepoRequest
     grades: TestGrades
     data: GitData
     view: ViewOnly
 
 
+@dataclass
+class ErrorResult:
+    status: Literal["error"]
+    error_message: str
+
+
 # def _convert(api_data: DataFromAPI, clone_data: DataFromClone) -> GitData:
 def _convert(api_data: DataFromAPI) -> GitData:
-
     return GitData(
         # code=CodeData(
         #     lines_of_code=clone_data.lines_of_code,
@@ -80,19 +88,29 @@ def _convert(api_data: DataFromAPI) -> GitData:
     )
 
 
-def input_util(
+def input_util(  # pylint: disable=too-many-return-statements  # refactor this later
     repo_url: Optional[str] = None,
     source: Optional[str] = None,
     owner: Optional[str] = None,
     repo: Optional[str] = None,
     github_token: Optional[str] = None,
 ) -> Dict[str, Any]:
-    if repo_url:
-        repo_request = identify_source(repo_url)
-    elif source and owner and repo:
-        repo_request = RepoRequest(source=source, owner=owner, repo=repo)
-    else:
-        raise InvalidRequest()
+    try:
+        if repo_url:
+            repo_request = identify_source(repo_url)
+        elif source and owner and repo:
+            repo_request = RepoRequest(source=source, owner=owner, repo=repo)
+        else:
+            raise UnsupportedURL("Could not figure out source")
+    except ValidationError:
+        logger.exception("Error parsing request URL")
+        return asdict(ErrorResult(status="error", error_message="Please provide a valid Github URL"))
+    except UnsupportedURL:
+        logger.exception("Unsupported URL received")
+        return asdict(ErrorResult(status="error", error_message="URL provided is not supported, please provide a valid Github URL"))
+
+    if repo_request.source != "github":
+        return {"status": "error", "error_message": "Please provide a valid Github URL, the URL provided was not from Github."}
 
     current_version = get_version()
 
@@ -102,7 +120,24 @@ def input_util(
         repo_request.sso_token = github_token
 
         fetch_github_api_data = async_to_sync(fetch_github_api_data_async)  # type: ignore
-        api_data = fetch_github_api_data(repo_request)
+        try:
+            api_data = fetch_github_api_data(repo_request)
+        except ClientResponseError as client_response_error:
+
+            if client_response_error.status == 403:
+                if github_token:
+                    return asdict(ErrorResult(status="error", error_message="You've reached the rate limit for Github, please wait a while and try again"))
+                return {"status": "error", "error_message": "Please sign in to Github to proceed."}
+
+            if client_response_error.status == 404:
+                return asdict(ErrorResult(status="error", error_message="The repo you requested does not exist."))
+
+            logger.exception("Unexpected ClientResponseError while parsing data")
+            return asdict(ErrorResult(status="error", error_message="Unexpected error, please retry or create an issue on our github."))
+
+        except ClientError:
+            logger.exception("Unexpected ClientError while parsing data")
+            return asdict(ErrorResult(status="error", error_message="Unexpected error, please retry or create an issue on our github."))
         # clone_data = fetch_clone_data(repo_request)
 
         git_data = _convert(api_data)
@@ -115,5 +150,5 @@ def input_util(
         commit_interval_days_recent=f"{test_grades.commit_interval_recent.raw_number:.2f}",
     )
 
-    result = RepoResult(request=repo_request, grades=test_grades, data=git_data, view=view_only)
+    result = RepoResult(request=repo_request, grades=test_grades, data=git_data, view=view_only, status="success")
     return asdict(result)

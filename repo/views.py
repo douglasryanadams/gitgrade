@@ -21,8 +21,7 @@ def repo_input(request: HttpRequest) -> HttpResponse:
     Returns a form for collecting the Repo URL we want to evaluate
     """
     logger.info("Received request %s", request)
-    form = RepoForm()
-    return render(request, "repo/repo_input.html", {"form": form})
+    return render(request, "repo/repo_input.html", {"form": RepoForm()})
 
 
 def repo_grade(
@@ -44,6 +43,10 @@ def repo_grade(
         return HttpResponseNotAllowed(permitted_methods=["POST", "GET"])
 
     if response_json:
-        return render(request, "repo/repo_results.html", response_json)
+        if response_json["status"] == "success":
+            return render(request, "repo/repo_results.html", response_json)
+
+        response_json["form"] = RepoForm()
+        return render(request, "repo/repo_input.html", response_json)
 
     return HttpResponseServerError()

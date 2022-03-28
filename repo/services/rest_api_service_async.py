@@ -89,17 +89,12 @@ async def _extract_commit_list(response: ClientResponse) -> List[Commit]:
     return commit_list
 
 
-async def _get_page_of_commits(
-    url: URL,
-    session: ClientSession,
-    lock_rate: asyncio.Lock,
-    lock_concurrent: asyncio.Semaphore
-) -> List[Commit]:
+async def _get_page_of_commits(url: URL, session: ClientSession, lock_rate: asyncio.Lock, lock_concurrent: asyncio.Semaphore) -> List[Commit]:
     async with lock_concurrent:
         async with lock_rate:
             await asyncio.sleep(0.1)
         logger.debug("  --> fetching commit page at url: %s", url)
-        async with session.get(f'{url.path}?{url.query_string}') as commit_response:
+        async with session.get(f"{url.path}?{url.query_string}") as commit_response:
             return await _extract_commit_list(commit_response)
 
 
@@ -155,7 +150,6 @@ async def _process_commit_data(commits: List[Commit]) -> TimeData:
     commits_by_author: Dict[str, int] = {}
     popular_author_count = 0
 
-
     for commit in commits:
         commit_count += 1
         commit_author = commit.author
@@ -203,7 +197,12 @@ async def fetch_github_api_data(repo_request_data: RepoRequest) -> DataFromAPI:
     six_months_ago = datetime.today() - timedelta(days=RECENT_DAYS)
 
     repo_uri = f"{repo_request_data.owner}/{repo_request_data.repo}"
-    async with aiohttp.ClientSession(base_url=BASE_URL, headers={"Authorization": f"Bearer {repo_request_data.sso_token}"}) as session:
+
+    headers = {}
+    if repo_request_data.sso_token:
+        headers["Authorization"] = f"Bearer {repo_request_data.sso_token}"
+
+    async with aiohttp.ClientSession(base_url=BASE_URL, headers=headers, raise_for_status=True) as session:
         repo_http = await _get_repo(repo_uri, session)
 
         open_pulls = await _get_pull_request_count(repo_uri, session, "open")

@@ -3,6 +3,11 @@
 
 {% block content %}
     <div>
+        {% if status == 'error' %}
+            <section>
+                <div class="alert alert-danger">{{ error_message }}</div>
+            </section>
+        {% endif %}
         <section>
             <form action='/result/' method='post'>
                 {% csrf_token %}
@@ -14,7 +19,7 @@
         </section>
         <section class="pt-3">
             <p>
-                Enter the link to a repository from either Github or Bitbucket to get a grade for that repository!
+                Enter the link to a repository from Github to get a grade for that repository!
             </p>
         </section>
     </div>

@@ -17,6 +17,7 @@ from repo.tests.github_data import COMMITS_PAGE_OBJECTS
 
 logger = logging.getLogger(__name__)
 
+
 @pytest.fixture
 def commit_page_client_response() -> AsyncMock:
     mock_client_response = AsyncMock()
@@ -26,8 +27,7 @@ def commit_page_client_response() -> AsyncMock:
 
 @pytest.mark.asyncio
 async def test_extract_commit_list(commit_page_client_response: AsyncMock) -> None:
-    actual = await rest_api_service_async._extract_commit_list(
-        commit_page_client_response)  # pylint: disable=protected-access
+    actual = await rest_api_service_async._extract_commit_list(commit_page_client_response)  # pylint: disable=protected-access
     assert actual == COMMITS_PAGE_OBJECTS
 
 
@@ -54,14 +54,14 @@ async def get_pull_request(request: Request) -> StreamResponse:
     if request.url.query.get("state") == "open":
         headers = {
             "link": '<https://api.github.com/repositories/1/pulls?per_page=1&state=all&page=2>; rel="next",'
-                    " "
-                    '<https://api.github.com/repositories/1/pulls?per_page=1&state=all&page=10>; rel="last"'
+            " "
+            '<https://api.github.com/repositories/1/pulls?per_page=1&state=all&page=10>; rel="last"'
         }
     elif request.url.query.get("state") == "all":
         headers = {
             "link": '<https://api.github.com/repositories/1/pulls?per_page=1&state=all&page=2>; rel="next",'
-                    " "
-                    '<https://api.github.com/repositories/1/pulls?per_page=1&state=all&page=100>; rel="last"'
+            " "
+            '<https://api.github.com/repositories/1/pulls?per_page=1&state=all&page=100>; rel="last"'
         }
     else:
         raise Exception(f"Invalid pull request state requested: {request.url.query.get('state')}")
@@ -73,19 +73,17 @@ async def get_commits(request: Request) -> StreamResponse:
     return web.Response(
         body=json.dumps(
             [
-                {"commit": {"author": {"name": "test-name", "date": "2022-01-20T00:00:00Z"},
-                            "message": "commits_back: 0", "comment_count": 0}},
-                {"commit": {"author": {"name": "test-name", "date": "2022-01-19T00:00:00Z"},
-                            "message": "commits_back: 1", "comment_count": 0}},
+                {"commit": {"author": {"name": "test-name", "date": "2022-01-20T00:00:00Z"}, "message": "commits_back: 0", "comment_count": 0}},
+                {"commit": {"author": {"name": "test-name", "date": "2022-01-19T00:00:00Z"}, "message": "commits_back: 1", "comment_count": 0}},
             ]
         ),
         headers={
             "content-type": "application/json",
             "link": "<https://api.github.com/repositories/1/commits?per_page=2&since=2022-01-20T00%3A00%3A00Z&page=2>; "
-                    'rel="next",'
-                    " "
-                    "<https://api.github.com/repositories/1/commits?per_page=2&since=2022-01-20T00%3A00%3A00Z&page=5>; "
-                    'rel="last"',
+            'rel="next",'
+            " "
+            "<https://api.github.com/repositories/1/commits?per_page=2&since=2022-01-20T00%3A00%3A00Z&page=5>; "
+            'rel="last"',
         },
         status=200,
     )
@@ -98,8 +96,7 @@ async def get_paginated_commits(request: Request) -> StreamResponse:
     return web.Response(
         body=json.dumps(
             [
-                {"commit": {"author": {"name": "test-name", "date": f"2022-01-{20 - commit_counter}T00:00:00Z"},
-                            "message": f"commits_back: {commit_counter}", "comment_count": 0}},
+                {"commit": {"author": {"name": "test-name", "date": f"2022-01-{20 - commit_counter}T00:00:00Z"}, "message": f"commits_back: {commit_counter}", "comment_count": 0}},
                 {
                     "commit": {
                         "author": {"name": "test-name", "date": f"2022-01-{20 - commit_counter - 1}T00:00:00Z"},
