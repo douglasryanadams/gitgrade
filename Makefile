@@ -6,6 +6,7 @@ DJANGO_SETTINGS = \
 	SECRET_KEY=local
 
 init:
+	poetry run pip install --upgrade pip
 	poetry install
 
 test:
@@ -25,6 +26,7 @@ security:
 	poetry export --without-hashes -f requirements.txt > tmp_requirements.txt
 	poetry run liccheck -r tmp_requirements.txt
 	poetry run safety check --full-report -r tmp_requirements.txt
+	poetry run pip-audit -r tmp_requirements.txt
 	rm tmp_requirements.txt
 
 run:
