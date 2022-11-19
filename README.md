@@ -23,7 +23,7 @@ Requires:
 
 ```bash
 make build
-vim .env  # Add Environment Variables (see below) 
+vim .env  # Add Environment Variables (see below)
 make run
 open http://localhost:8000
 ```

@@ -318,8 +318,8 @@ def calculate_grade(data: GitData) -> TestGrades:
         "commit_interval_recent": grade_commit_interval(data.commit_recent.interval),
     }
 
-    final_points_max = sum([grade.points_max for grade in test_grades.values()])
-    final_points_earned = sum([grade.points_earned for grade in test_grades.values()])
+    final_points_max = sum(grade.points_max for grade in test_grades.values())
+    final_points_earned = sum(grade.points_earned for grade in test_grades.values())
     final_grade = _construct_grade(
         points_max=final_points_max,
         points_earned=final_points_earned,

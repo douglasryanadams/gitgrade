@@ -1,4 +1,6 @@
 import logging
+import os
+import pprint
 
 import pytest
 
@@ -17,7 +19,7 @@ logger = logging.getLogger(__name__)
         ("https://github.com/rails/rails", Grade.A),
         ("https://github.com/microsoft/TypeScript", Grade.A),
         ("https://github.com/tiangolo/fastapi", Grade.A),
-        ("https://github.com/projectdiscovery/httpx", Grade.B),
+        ("https://github.com/projectdiscovery/httpx", Grade.A),
         ("https://github.com/postmanlabs/httpbin", Grade.F),
     ],
 )
@@ -38,6 +40,12 @@ def test_baselines(
     Finally, this test will encourage optimizing the evaluation speed of repos because
     we're doing a few "for real."
     """
-    response_json = input_util(url)
-    logger.debug("response_json=%s", response_json)
+    github_token = os.getenv("GITHUB_TOKEN")
+    if github_token:
+        response_json = input_util(url, github_token=github_token)
+    else:
+        response_json = input_util(url)
+
+    printer = pprint.PrettyPrinter(indent=2)
+    printer.pprint(response_json)
     assert response_json["grades"]["final_grade"]["letter_grade"] == expected_grade

@@ -225,7 +225,7 @@ async def fetch_github_api_data(repo_request_data: RepoRequest) -> DataFromAPI:
     try:
         days_since_last_commit = await _get_days_since_last_commit(recent_commits[0])
     except IndexError:
-        days_since_last_commit = -1
+        days_since_last_commit = RECENT_DAYS + 1
 
     return DataFromAPI(
         days_since_update=days_since_update,

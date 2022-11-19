@@ -2,7 +2,7 @@
   "containerDefinitions": [
     {
       "name": "gitgrade-carrot",
-      "image": "746433511096.dkr.ecr.us-west-2.amazonaws.com/gitgrade:0.5.0",
+      "image": "746433511096.dkr.ecr.us-west-2.amazonaws.com/gitgrade:0.6.0",
       "cpu": 0,
       "links": [],
       "portMappings": [
@@ -89,8 +89,8 @@
   "requiresCompatibilities": [
     "FARGATE"
   ],
-  "cpu": "256",
-  "memory": "512",
+  "cpu": "512",
+  "memory": "1024",
   "tags": [
     {
       "key": "app",

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "gitgrade"
-version = "0.5.0"
+version = "0.6.0"
 description = "Evaluates quality of git repos and provides a grade"
 authors = ["Douglas Adams <douglasryanadams@gmail.com>"]
 license = "MIT"
