@@ -32,3 +32,9 @@ class Commit:
     author: Author
     message: str
     comment_count: int
+
+
+@dataclass
+class Release:
+    tag: str
+    created_at: str

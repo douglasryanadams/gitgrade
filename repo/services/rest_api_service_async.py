@@ -10,7 +10,7 @@ from yarl import URL
 
 from repo.data.from_source import DataFromAPI, TimeData
 from repo.data.general import RepoRequest, Statistics
-from repo.data.github import Repo, Commit, Author
+from repo.data.github import Repo, Commit, Author, Release
 from repo.services.util import get_statistics
 
 logger = logging.getLogger(__name__)
@@ -32,18 +32,19 @@ async def _get_repo(uri: str, session: ClientSession) -> Repo:
     logger.debug("  fetching repo: %s", uri)
     async with session.get(f"/repos/{uri}") as repo_response:
         repo_response_json = await repo_response.json()
-        repo = Repo(
-            id=repo_response_json.get("id", "-1"),
-            name=repo_response_json.get("name", "unknown"),
-            created_at=repo_response_json.get("created_at", "1970-01-01T00:00:00Z"),
-            updated_at=repo_response_json.get("updated_at", "1970-01-01T00:00:00Z"),
-            language=repo_response_json.get("language", "unknown"),
-            open_issues_count=repo_response_json.get("open_issues_count", "-1"),
-            watchers_count=repo_response_json.get("watchers_count", "-1"),
-            forks_count=repo_response_json.get("forks_count", "-1"),
-        )
-        logger.debug("  received repo: %s", repo)
-        return repo
+
+    repo = Repo(
+        id=repo_response_json.get("id", "-1"),
+        name=repo_response_json.get("name", "unknown"),
+        created_at=repo_response_json.get("created_at", "1970-01-01T00:00:00Z"),
+        updated_at=repo_response_json.get("updated_at", "1970-01-01T00:00:00Z"),
+        language=repo_response_json.get("language", "unknown"),
+        open_issues_count=repo_response_json.get("open_issues_count", "-1"),
+        watchers_count=repo_response_json.get("watchers_count", "-1"),
+        forks_count=repo_response_json.get("forks_count", "-1"),
+    )
+    logger.debug("  received repo: %s", repo)
+    return repo
 
 
 async def _get_last_page_number(paginated_response: ClientResponse) -> int:
@@ -63,6 +64,35 @@ async def _get_pull_request_count(uri: str, session: ClientSession, state: Liter
     params = {"per_page": 1, "state": state}
     async with session.get(f"/repos/{uri}/pulls", params=params) as pulls_response:
         return await _get_last_page_number(pulls_response)
+
+
+async def _get_tag(uri: str, tag_sha: str, sem: asyncio.Semaphore, session: ClientSession) -> Release:
+    async with sem:
+        async with session.get(f"/repos/{uri}/git/tags/{tag_sha}") as tag_response:
+            tag_json = await tag_response.json()
+
+    return Release(tag=tag_json["tag"], created_at=tag_json["tagger"]["date"])
+
+
+async def _get_releases(uri: str, session: ClientSession) -> List[Release]:
+    logger.debug("  fetching releases for: %s", uri)
+
+    async with session.get(f"repos/{uri}/git/matching-refs/tags") as tags_response:
+        tags_json = await tags_response.json()
+        logger.debug("  received %s tags", len(tags_json))
+        tags_json = []
+
+        sem = asyncio.Semaphore(10)
+        tasks = []
+        for tag in tags_json:
+            sha = tag["object"]["sha"]
+            tasks.append(_get_tag(uri, sha, sem, session))
+
+    releases = await asyncio.gather(*tasks, return_exceptions=False)
+    # Sorts releases (aka tags) by date, puts most recent release first
+    releases.sort(key=lambda r: _github_datestring_to_datetime(r.created_at), reverse=True)
+
+    return releases
 
 
 async def _get_commit_count(uri: str, session: ClientSession, since: datetime) -> int:
@@ -190,6 +220,13 @@ async def _get_days_since_last_commit(commit: Commit) -> int:
     return since_last_commit.days
 
 
+async def _get_days_since_last_release(release: Release) -> int:
+    logger.info("  getting days since last release")
+    latest_release = _github_datestring_to_datetime(release.created_at)
+    since_last_release = datetime.now().astimezone() - latest_release
+    return since_last_release.days
+
+
 async def fetch_github_api_data(repo_request_data: RepoRequest) -> DataFromAPI:
     logger.debug("  fetching data from github for: %s", repo_request_data)
 
@@ -212,6 +249,8 @@ async def fetch_github_api_data(repo_request_data: RepoRequest) -> DataFromAPI:
         # Paginated API calls for all commits of git/git: 663
         recent_commits = await _get_commits(repo_uri, session, six_months_ago)
 
+        releases = await _get_releases(repo_uri, session)
+
     recent_commits.sort(key=lambda c: c.author.date, reverse=True)
 
     time_data_recent = await _process_commit_data(recent_commits)
@@ -227,6 +266,16 @@ async def fetch_github_api_data(repo_request_data: RepoRequest) -> DataFromAPI:
     except IndexError:
         days_since_last_commit = RECENT_DAYS + 1
 
+    try:
+        latest_release = releases[0].tag
+    except IndexError:
+        latest_release = "Unreleased"
+
+    try:
+        days_since_last_release = await _get_days_since_last_release(releases[0])
+    except IndexError:
+        days_since_last_release = None
+
     return DataFromAPI(
         days_since_update=days_since_update,
         days_since_create=days_since_create,
@@ -236,4 +285,7 @@ async def fetch_github_api_data(repo_request_data: RepoRequest) -> DataFromAPI:
         open_issue_count=repo_http.open_issues_count,
         days_since_commit=days_since_last_commit,
         time_recent=time_data_recent,
+        latest_release=latest_release,
+        releases_count=len(releases),
+        days_since_last_release=days_since_last_release,
     )

@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from typing import Optional
+
 from repo.data.general import Statistics
 
 
@@ -38,3 +40,7 @@ class DataFromAPI:
 
     days_since_commit: int
     time_recent: TimeData
+
+    latest_release: str
+    releases_count: int
+    days_since_last_release: Optional[int]

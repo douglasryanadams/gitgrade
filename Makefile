@@ -45,7 +45,6 @@ check: lint test security
 version:
 	poetry version | awk '{print $$2}' > gitgrade/version.txt
 
-
 build_docker:
 	docker build --tag gitgrade:$$(cat gitgrade/version.txt) .
 
