@@ -114,9 +114,9 @@ async def get_paginated_commits(request: Request) -> StreamResponse:
 async def get_tag(request: Request) -> StreamResponse:
     # The sha is hacked to be a mock hash with the last digit being a sequential int
     sha: str = request.match_info["sha"]
-    int_hack = int(sha[-1])
+    int_hack = int(sha[-1]) + 1
 
-    tag = {"tag": f"{int_hack}.0.0", "tagger": {"date": f"2022-01-{10 + int_hack}T:00:00:00Z"}}
+    tag = {"tag": f"{int_hack}.0.0", "tagger": {"date": f"2022-01-{10 + int_hack}T00:00:00Z"}}
 
     return web.Response(body=json.dumps(tag), headers={"content-type": "application/json"}, status=200)
 
@@ -141,7 +141,7 @@ def patched_aiohttp_client(loop, aiohttp_client: AsyncMock) -> Any:
     github_stub.router.add_get("/repositories/1/commits", get_paginated_commits)
 
     github_stub.router.add_get("/repos/test/test/git/matching-refs/tags", get_tags)
-    github_stub.router.add_get("/repose/test/test/git/tags/{sha}", get_tag)
+    github_stub.router.add_get("/repos/test/test/git/tags/{sha}", get_tag)
 
     return loop.run_until_complete(aiohttp_client(github_stub))
 

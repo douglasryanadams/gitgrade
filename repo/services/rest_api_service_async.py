@@ -70,20 +70,18 @@ async def _get_tag(uri: str, tag_sha: str, sem: asyncio.Semaphore, session: Clie
     async with sem:
         async with session.get(f"/repos/{uri}/git/tags/{tag_sha}") as tag_response:
             tag_json = await tag_response.json()
-
-    return Release(tag=tag_json["tag"], created_at=tag_json["tagger"]["date"])
+            return Release(tag=tag_json["tag"], created_at=tag_json["tagger"]["date"])
 
 
 async def _get_releases(uri: str, session: ClientSession) -> List[Release]:
     logger.debug("  fetching releases for: %s", uri)
 
-    async with session.get(f"repos/{uri}/git/matching-refs/tags") as tags_response:
+    tasks = []
+    async with session.get(f"/repos/{uri}/git/matching-refs/tags") as tags_response:
         tags_json = await tags_response.json()
         logger.debug("  received %s tags", len(tags_json))
-        tags_json = []
 
         sem = asyncio.Semaphore(10)
-        tasks = []
         for tag in tags_json:
             sha = tag["object"]["sha"]
             tasks.append(_get_tag(uri, sha, sem, session))
